@@ -180,7 +180,12 @@ export async function GET(): Promise<Response> {
     const files = entries
       .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".mp3"))
       .map((entry) => entry.name)
-      .sort((a, b) => a.localeCompare(b));
+      .sort((a, b) => {
+        const priority = "did i tell u that i miss u";
+        if (a.toLowerCase().includes(priority)) return -1;
+        if (b.toLowerCase().includes(priority)) return 1;
+        return a.localeCompare(b);
+      });
 
     const tracks = await Promise.all(
       files.map(async (fileName, index) => {
