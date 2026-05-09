@@ -23,7 +23,9 @@
 html, body {
   background: transparent !important;
   color: #888888;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; /* Allow scrolling on mobile if content is tall */
   font-family: 'Array-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: -0.02em;
   user-select: none;
@@ -45,17 +47,18 @@ html, body {
   box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
   width: 100%;
   backdrop-filter: blur(14px);
+  margin-bottom: 2rem;
 }
 
 .tui-layout {
   display: flex;
   flex-direction: column;
-  min-height: 400px;
 }
 
 @media (min-width: 768px) {
   .tui-layout {
     flex-direction: row;
+    min-height: 400px;
   }
 }
 
@@ -63,11 +66,12 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 2.5rem;
+  padding: 1.5rem; /* Compact for mobile */
 }
 
 @media (min-width: 768px) {
   .tui-main {
+    padding: 2.5rem;
     border-right: 1px solid #1a1a1a;
   }
 }
@@ -77,26 +81,43 @@ html, body {
   display: flex;
   flex-direction: column;
   background-color: rgba(6, 6, 6, 0.6);
+  border-top: 1px solid #1a1a1a; /* Divider on mobile */
 }
 
 @media (min-width: 768px) {
   .tui-sidebar {
     width: 280px;
+    border-top: none;
   }
 }
 
 .tui-header {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .tui-header {
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
 }
 
 .tui-avatar-frame {
-  width: 4rem;
-  height: 4rem;
+  width: 3.5rem;
+  height: 3.5rem;
   border: 1px solid #222222;
   padding: 0.2rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .tui-avatar-frame {
+    width: 4rem;
+    height: 4rem;
+  }
 }
 
 .tui-avatar {
@@ -107,14 +128,22 @@ html, body {
 }
 
 .tui-username {
-  font-size: 1.5rem;
-  line-height: 2rem;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
   color: #ffffff;
   font-weight: 400;
   text-transform: lowercase;
   letter-spacing: -0.025em;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
   font-family: 'Array-BoldWide', monospace;
+}
+
+@media (min-width: 768px) {
+  .tui-username {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    margin-bottom: 0.25rem;
+  }
 }
 
 .tui-status {
@@ -139,17 +168,31 @@ html, body {
 }
 
 .tui-bio-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   flex: 1;
 }
 
+@media (min-width: 768px) {
+  .tui-bio-section {
+    margin-bottom: 2rem;
+  }
+}
+
 .tui-bio-content {
-  font-size: 0.8rem;
-  line-height: 1.2rem;
+  font-size: 0.75rem;
+  line-height: 1.1rem;
   color: #666666;
   border: 1px solid #111111;
   background-color: rgba(7, 7, 7, 0.7);
-  padding: 1.25rem;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .tui-bio-content {
+    font-size: 0.8rem;
+    line-height: 1.2rem;
+    padding: 1.25rem;
+  }
 }
 
 .tui-social-grid {
@@ -183,31 +226,55 @@ html, body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 1.5rem;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .tui-player {
+    padding: 1.5rem;
+  }
 }
 
 .tui-player-header {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .tui-player-header {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .tui-player-visualizer {
-  height: 2.5rem;
+  height: 2.25rem;
   width: 100%;
   background-color: #040404;
   border: 1px solid #111111;
   padding: 0.4rem;
 }
 
+@media (min-width: 768px) {
+  .tui-player-visualizer {
+    height: 2.5rem;
+  }
+}
+
 .tui-player-info {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .tui-player-info {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .tui-track-title {
   color: #ffffff;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -216,14 +283,32 @@ html, body {
   margin-bottom: 0.2rem;
 }
 
+@media (min-width: 768px) {
+  .tui-track-title {
+    font-size: 0.75rem;
+  }
+}
+
 .tui-track-artist {
   color: #555555;
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
 }
 
+@media (min-width: 768px) {
+  .tui-track-artist {
+    font-size: 10px;
+  }
+}
+
 .tui-player-progress {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .tui-player-progress {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .tui-progress-track {
@@ -275,7 +360,7 @@ html, body {
 }
 
 .tui-playlist-meta {
-  margin-top: auto;
+  margin-top: 1rem;
   text-align: center;
   font-size: 7px;
   color: #222222;
@@ -286,7 +371,13 @@ html, body {
 /* Overlays */
 
 .tui-view-counter {
-  @apply absolute right-4 top-4 z-20 flex items-center px-0 py-0 text-[#444444];
+  @apply fixed right-4 top-4 z-20 flex items-center px-0 py-0 text-[#444444];
+}
+
+@media (min-width: 768px) {
+  .tui-view-counter {
+    @apply right-6 top-6;
+  }
 }
 
 .tui-view-counter:hover {
