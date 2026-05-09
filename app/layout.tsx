@@ -26,19 +26,20 @@ export const metadata: Metadata = {
     description: "Minimalist TUI Bio",
     images: [
       {
-        url: "/og-image.png",
+        url: "/api/og",
         width: 1200,
         height: 630,
         alt: "@blunted Bio",
       },
     ],
-    type: "website",
-  },
-  twitter: {
+    ...
+    twitter: {
     card: "summary_large_image",
     title: "@blunted",
     description: "Minimalist TUI Bio",
-    images: ["/og-image.png"],
+    images: ["/api/og"],
+    },
+
   },
 };
 
