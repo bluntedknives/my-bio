@@ -1,7 +1,13 @@
 import type { Config } from "tailwindcss";
+import { ledgerLivePreset } from '@ledgerhq/lumen-design-core';
 
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: [
+    "./app/**/*.{ts,tsx}", 
+    "./components/**/*.{ts,tsx}",
+    './node_modules/@ledgerhq/lumen-ui-react/dist/**/*.{js,ts,jsx,tsx}',
+  ],
+  presets: [ledgerLivePreset],
   theme: {
     extend: {
       fontFamily: {

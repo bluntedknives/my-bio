@@ -20,6 +20,7 @@ const formatTime = (time: number) => {
 };
 
 export default function MusicPlayer() {
+  const AUDIO_REACTIVE_EVENT = "bio:audio-reactive";
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -29,7 +30,10 @@ export default function MusicPlayer() {
   const audioGraphFailedRef = useRef(false);
   const isPlayingRef = useRef(false);
   const levelsRef = useRef<number[]>([]);
-  const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const bassAverageRef = useRef(0);
+  const bassPreviousRef = useRef(0);
+  const pulseRef = useRef(0);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -44,7 +48,7 @@ export default function MusicPlayer() {
 
     const AudioContextClass =
       window.AudioContext ||
-      (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
 
     try {
@@ -87,6 +91,11 @@ export default function MusicPlayer() {
 
   useEffect(() => {
     return () => {
+      document.dispatchEvent(
+        new CustomEvent(AUDIO_REACTIVE_EVENT, {
+          detail: { bass: 0, energy: 0, pulse: 0, time: performance.now() },
+        }),
+      );
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
@@ -226,7 +235,7 @@ export default function MusicPlayer() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const barCount = 12;
+    const barCount = 10;
     const minHeight = 2;
     const barGap = 4;
 
@@ -247,42 +256,68 @@ export default function MusicPlayer() {
 
       ctx.clearRect(0, 0, width, height);
 
-      const active = isPlayingRef.current && analyserRef.current;
       const analyserNode = analyserRef.current;
       let dataArray = dataArrayRef.current;
+      let bassEnergy = 0;
+      let totalEnergy = 0;
       if (analyserNode) {
         if (!dataArray || dataArray.length !== analyserNode.frequencyBinCount) {
           dataArray = new Uint8Array(analyserNode.frequencyBinCount);
           dataArrayRef.current = dataArray;
         }
-        analyserNode.getByteFrequencyData(dataArray);
-      } else {
-        if (!dataArray) {
-          dataArray = new Uint8Array(32);
-          dataArrayRef.current = dataArray;
-        } else {
-          dataArray.fill(0);
+        analyserNode.getByteFrequencyData(dataArray as any);
+
+        if (isPlayingRef.current && dataArray.length > 0) {
+          const bassBins = Math.max(4, Math.floor(dataArray.length * 0.18));
+          let bassSum = 0;
+          let totalSum = 0;
+
+          for (let i = 0; i < dataArray.length; i += 1) {
+            const value = dataArray[i] || 0;
+            totalSum += value;
+            if (i < bassBins) {
+              bassSum += value;
+            }
+          }
+
+          bassEnergy = bassSum / bassBins / 255;
+          totalEnergy = totalSum / dataArray.length / 255;
         }
       }
+
+      const averageBass = bassAverageRef.current * 0.9 + bassEnergy * 0.1;
+      const bassRise = Math.max(0, bassEnergy - bassPreviousRef.current);
+      const beatDelta = Math.max(0, bassEnergy - averageBass);
+      bassAverageRef.current = averageBass;
+      bassPreviousRef.current = bassEnergy;
+      pulseRef.current = Math.max(
+        pulseRef.current * 0.86,
+        Math.min(1, beatDelta * 5 + bassRise * 4 + totalEnergy * 0.35),
+      );
+
+      document.dispatchEvent(
+        new CustomEvent(AUDIO_REACTIVE_EVENT, {
+          detail: {
+            bass: bassEnergy,
+            energy: totalEnergy,
+            pulse: pulseRef.current,
+            time: performance.now(),
+          },
+        }),
+      );
 
       const totalGap = barGap * (barCount - 1);
       const barWidth = Math.max(2, (width - totalGap) / barCount);
       ctx.fillStyle = "#ffffff";
 
-      const binsPerBar = Math.max(1, Math.floor(dataArray.length / barCount));
-
       for (let i = 0; i < barCount; i += 1) {
-        const start = i * binsPerBar;
-        let sum = 0;
-        for (let j = 0; j < binsPerBar; j += 1) {
-          sum += dataArray[start + j] ?? 0;
-        }
-        const rawValue = sum / binsPerBar;
+        const active = isPlayingRef.current && dataArray;
+        const rawValue = dataArray ? dataArray[i * 2] || 0 : 0;
         const normalized = active ? rawValue / 255 : 0;
         const target = Math.min(1, normalized * 1.5);
         const smoothed = (levelsRef.current[i] ?? 0) * 0.8 + target * 0.2;
         levelsRef.current[i] = smoothed;
-        const barHeight = Math.max(minHeight, smoothed * (height - 4));
+        const barHeight = Math.max(minHeight, smoothed * (height - 2));
         const x = i * (barWidth + barGap);
         const y = height - barHeight;
         ctx.fillRect(x, y, barWidth, barHeight);
@@ -299,58 +334,45 @@ export default function MusicPlayer() {
         rafRef.current = null;
       }
     };
-  }, [isPlaying]);
+  }, []);
 
   return (
-    <div className="music-player">
-      <div className="music-top">
-        <div className="music-header">
-          <div className="music-label">Status.Playback</div>
-          <div className="music-title">{currentTrack?.title ?? "No tracks found"}</div>
-          <div className="music-artist">{currentTrack?.artist ? currentTrack.artist : "SoundCloud.app_Leaks"}</div>
-        </div>
-
-        <div className="music-visualizer" aria-hidden="true">
+    <div className="tui-player">
+      <div className="tui-player-header">
+        <div className="tui-label">AUDIO.SYS</div>
+        <div className="tui-player-visualizer">
           <canvas ref={canvasRef} className="h-full w-full" />
         </div>
       </div>
 
-      <div className="music-progress-container">
-        <div className="music-progress" onClick={handleSeek} role="button" tabIndex={0} title="Seek">
-          <div
-            className="music-progress-bar"
-            style={{ width: `${progress}%` }}
-          />
+      <div className="tui-player-info">
+        <div className="tui-track-title">{currentTrack?.title || "NO MEDIA"}</div>
+        <div className="tui-track-artist">{currentTrack?.artist || "UNKNOWN SOURCE"}</div>
+      </div>
+
+      <div className="tui-player-progress">
+        <div className="tui-progress-track" onClick={handleSeek}>
+          <div className="tui-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="tui-player-time">
+          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(duration)}</span>
         </div>
       </div>
 
-      <div className="music-time">
-        <span>{formatTime(currentTime)}</span>
-        <span>
-          {tracks.length > 0 ? `${currentIndex + 1}/${tracks.length}` : "--/--"}
-        </span>
-        <span>{formatTime(duration)}</span>
-      </div>
-
-      <div className="music-controls">
-        <button className="music-btn" type="button" onClick={playPrev} aria-label="Previous" title="Previous">
-          PREV
-        </button>
-        <button
-          className="music-btn"
-          type="button"
-          onClick={togglePlay}
-          aria-label="Play or pause"
-          title={isPlaying ? "Pause" : "Play"}
-        >
+      <div className="tui-player-controls">
+        <button onClick={playPrev} className="tui-btn">BACK</button>
+        <button onClick={togglePlay} className="tui-btn-main">
           {isPlaying ? "PAUSE" : "PLAY"}
         </button>
-        <button className="music-btn" type="button" onClick={playNext} aria-label="Next" title="Next">
-          NEXT
-        </button>
+        <button onClick={playNext} className="tui-btn">NEXT</button>
       </div>
 
-      <audio ref={audioRef} preload="metadata" />
+      <div className="tui-playlist-meta">
+        TRACK {currentIndex + 1} OF {tracks.length}
+      </div>
+
+      <audio ref={audioRef} />
     </div>
   );
 }

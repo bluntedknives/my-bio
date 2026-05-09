@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 @font-face {
   font-family: 'Array-Regular';
   src: url('/font/Array-Regular.otf') format('opentype');
@@ -18,357 +20,298 @@
   src: url('/font/Array-BoldWide.otf') format('opentype');
 }
 
-@font-face {
-  font-family: 'Array-Semibold';
-  src: url('/font/Array-Semibold.otf') format('opentype');
-}
-
-@font-face {
-  font-family: 'Array-SemiboldWide';
-  src: url('/font/Array-SemiboldWide.otf') format('opentype');
-}
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  html,
-  body {
-    width: 100%;
-    min-height: 100%;
-    margin: 0;
-    overflow-x: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-  }
-
-  body {
-    font-family: 'Array-Regular', var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    background: #080808;
-    color: #a0a0a0;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-}
-
-.background-image {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  object-position: center;
-  z-index: -1;
-  filter: grayscale(1) contrast(1.1) brightness(0.6);
-}
-
-.profile-card {
-  position: relative;
-  border: 1px solid #1a1a1a;
-  padding: 0;
-  background: #080808;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-  transition: transform 0.1s ease-out;
+html, body {
+  background: transparent !important;
+  color: #888888;
   overflow: hidden;
+  font-family: 'Array-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: -0.02em;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
-.profile-layout {
+.tui-container, main {
+  background: transparent !important;
+}
+
+/* TUI Card Styles - Classic Gray */
+
+.tui-card {
+  position: relative;
+  background-color: rgba(8, 8, 8, 0.85);
+  border: 1px solid #1a1a1a;
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
+  width: 100%;
+  backdrop-filter: blur(14px);
+}
+
+.tui-layout {
   display: flex;
-  flex-direction: row;
-  min-height: 480px;
+  flex-direction: column;
+  min-height: 400px;
 }
 
-.profile-main {
+@media (min-width: 768px) {
+  .tui-layout {
+    flex-direction: row;
+  }
+}
+
+.tui-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 60px;
-  border-right: 1px solid #1a1a1a;
+  padding: 2.5rem;
 }
 
-.profile-player {
-  width: 320px;
-  flex-shrink: 0;
-  background: #080808;
+@media (min-width: 768px) {
+  .tui-main {
+    border-right: 1px solid #1a1a1a;
+  }
+}
+
+.tui-sidebar {
+  width: 100%;
   display: flex;
   flex-direction: column;
+  background-color: rgba(6, 6, 6, 0.6);
 }
 
-.profile-header {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  margin-bottom: 40px;
+@media (min-width: 768px) {
+  .tui-sidebar {
+    width: 280px;
+  }
 }
 
-.profile-header-left {
+.tui-header {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-.profile-avatar-wrap {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 50% !important;
-  padding: 0;
-  overflow: visible;
+.tui-avatar-frame {
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid #222222;
+  padding: 0.2rem;
 }
 
-.avatar-decoration {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 120%;
-  height: 120%;
-  max-width: none;
-  z-index: 10;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.profile-avatar {
+.tui-avatar {
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
-  filter: grayscale(1);
-  border-radius: 50% !important;
+  filter: grayscale(1) brightness(0.75);
 }
 
-.profile-title {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.profile-name {
-  margin: 0;
-  font-size: 2.5rem;
-  font-weight: 400;
-  letter-spacing: -0.05em;
+.tui-username {
+  font-size: 1.5rem;
+  line-height: 2rem;
   color: #ffffff;
-  font-family: 'Array-BoldWide', monospace;
+  font-weight: 400;
   text-transform: lowercase;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.25rem;
+  font-family: 'Array-BoldWide', monospace;
 }
 
-.profile-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0;
-  background: transparent;
-  width: fit-content;
-}
-
-.discord-status-icon {
-  width: 8px;
-  height: 8px;
-}
-
-.discord-status-text {
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #cccccc;
-  font-family: 'Array-Wide', monospace;
-}
-
-.social-row {
+.tui-status {
   display: flex;
-  gap: 12px;
-  margin-top: auto;
-  padding-top: 24px;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.social-link {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
+.tui-status-dot {
+  width: 0.3rem;
+  height: 0.3rem;
+  background-color: #333333;
+}
+
+.tui-label {
+  font-size: 8px;
+  color: #444444;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.tui-bio-section {
+  margin-bottom: 2rem;
+  flex: 1;
+}
+
+.tui-bio-content {
+  font-size: 0.8rem;
+  line-height: 1.2rem;
+  color: #666666;
+  border: 1px solid #111111;
+  background-color: rgba(7, 7, 7, 0.7);
+  padding: 1.25rem;
+}
+
+.tui-social-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background-color: #111111;
+  border: 1px solid #111111;
+  margin-top: auto;
+}
+
+.tui-social-link {
+  display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #1a1a1a;
-  background: #080808;
+  padding: 0.5rem;
+  background-color: #080808;
   color: #444444;
-  transition: all 0.2s ease;
+  transition: all 150ms ease;
+  height: 38px;
 }
 
-.social-link:hover {
-  background: #ffffff;
-  border-color: #ffffff;
+.tui-social-link:hover {
+  background-color: #ffffff;
   color: #000000;
 }
 
-/* Music Player Redesign */
-.music-player {
+/* TUI Player */
+
+.tui-player {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #080808;
+  padding: 1.5rem;
 }
 
-.music-top {
-  padding: 40px;
-  flex: 1;
+.tui-player-header {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.music-header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.tui-player-visualizer {
+  height: 2.5rem;
+  width: 100%;
+  background-color: #040404;
+  border: 1px solid #111111;
+  padding: 0.4rem;
 }
 
-.music-label {
-  font-size: 10px;
-  color: #444444;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-family: 'Array-Wide', monospace;
+.tui-player-info {
+  margin-bottom: 1.5rem;
 }
 
-.music-title {
-  font-size: 14px;
-  color: #dddddd;
-  white-space: nowrap;
+.tui-track-title {
+  color: #ffffff;
+  font-size: 0.75rem;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: 'Array-Bold', monospace;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
 }
 
-.music-artist {
-  font-size: 12px;
-  color: #666666;
-  font-family: 'Array-Regular', monospace;
+.tui-track-artist {
+  color: #555555;
+  font-size: 10px;
+  text-transform: uppercase;
 }
 
-.bio-label {
-  font-family: 'Array-Wide', monospace;
+.tui-player-progress {
+  margin-bottom: 1.5rem;
 }
 
-.music-visualizer {
-  height: 60px;
-  width: 100%;
-  border: 1px solid #1a1a1a;
-  background: #050505;
-  padding: 8px;
-}
-
-.music-progress-container {
-  padding: 0 32px;
-}
-
-.music-progress {
-  height: 4px;
-  background: #1a1a1a;
+.tui-progress-track {
+  height: 0.2rem;
+  background-color: #111111;
   position: relative;
   cursor: pointer;
+  margin-bottom: 0.4rem;
 }
 
-.music-progress-bar {
+.tui-progress-fill {
   height: 100%;
-  background: #ffffff;
+  background-color: #ffffff;
+  transition: all 300ms ease;
 }
 
-.music-time {
-  padding: 12px 32px;
+.tui-player-time {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
-  color: #444444;
+  font-size: 8px;
+  color: #333333;
+  font-weight: 700;
+  letter-spacing: 0.1em;
 }
 
-.music-controls {
-  padding: 32px;
+.tui-player-controls {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
-  background: #1a1a1a;
-  border-top: 1px solid #1a1a1a;
+  background-color: #111111;
+  border: 1px solid #111111;
+  margin-bottom: 1rem;
 }
 
-.music-btn {
-  height: 44px;
-  background: #080808;
-  border: none;
+.tui-btn, .tui-btn-main {
+  background-color: #080808;
   color: #444444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  transition: all 0.2s ease;
-  font-family: 'Array-Wide', monospace;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  transition: all 150ms ease;
 }
 
-.music-btn:hover {
-  background: #ffffff;
-  color: #000000;
+.tui-btn:hover, .tui-btn-main:hover {
+  background-color: #111111;
+  color: #ffffff;
 }
 
-/* Lockscreen Redesign */
+.tui-playlist-meta {
+  margin-top: auto;
+  text-align: center;
+  font-size: 7px;
+  color: #222222;
+  letter-spacing: 0.3em;
+  font-weight: 700;
+}
+
+/* Overlays */
+
+.tui-view-counter {
+  @apply absolute right-4 top-4 z-20 flex items-center px-0 py-0 text-[#444444];
+}
+
+.tui-view-counter:hover {
+  @apply text-white transition-all;
+}
+
 #lockscreen {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #000000;
+  background-color: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  overflow: hidden;
-}
-
-#lockscreen::before {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  z-index: 2;
-  background-size: 100% 2px, 3px 100%;
-  pointer-events: none;
 }
 
 .click-text {
-  font-family: 'Array-Wide', monospace;
-  font-size: 14px;
+  font-size: 10px;
+  color: #222222;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  letter-spacing: 0.3em;
-}
-
-.typing-cursor {
-  display: inline-block;
-  width: 8px;
-  height: 14px;
-  background-color: #ffffff;
-  margin-left: 4px;
-  vertical-align: middle;
+  font-weight: 700;
 }
 
 * {
-  cursor: url("/cursors/Aero.cur"), auto !important;
-}
-
-@media (max-width: 900px) {
-  .profile-layout {
-    flex-direction: column;
-  }
-  .profile-main {
-    border-right: none;
-    border-bottom: 1px solid #1a1a1a;
-    padding: 30px;
-  }
-  .profile-player {
-    width: 100%;
-  }
+  cursor: crosshair !important;
 }

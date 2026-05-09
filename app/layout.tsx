@@ -15,11 +15,15 @@ type RootLayoutProps = {
   children: ReactNode;
 };
 
+import Providers from "../components/Providers";
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="pt-br" className={arrayFont.variable}>
-      <body className="min-h-screen overflow-x-hidden bg-black text-white">
-        {children}
+    <html lang="en" className={arrayFont.variable} suppressHydrationWarning>
+      <body className="min-h-screen overflow-x-hidden bg-[var(--theme-back)] text-[var(--theme-text)]">
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

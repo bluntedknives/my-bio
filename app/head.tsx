@@ -3,7 +3,7 @@ export default function Head() {
     <>
       <meta charSet="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="theme-color" content="#000000" />
+      <meta name="theme-color" content="#301c2a" />
       <title>@blunted</title>
       <link rel="icon" href="/images/ui/icon.png" type="image/png" />
     </>

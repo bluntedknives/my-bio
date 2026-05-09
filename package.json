@@ -2,17 +2,21 @@
   "name": "bio",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
+    "@ledgerhq/crypto-icons": "^2.0.1",
+    "@ledgerhq/lumen-design-core": "^0.1.13",
+    "@ledgerhq/lumen-ui-react": "^0.1.30",
     "@paper-design/shaders-react": "^0.0.47",
     "@supabase/supabase-js": "^2.98.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.29.2",
+    "mongodb": "^7.2.0",
     "next": "^16.1.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
