@@ -32,21 +32,20 @@ export const metadata: Metadata = {
         alt: "@blunted Bio",
       },
     ],
-    ...
-    twitter: {
+    type: "website",
+  },
+  twitter: {
     card: "summary_large_image",
     title: "@blunted",
     description: "Minimalist TUI Bio",
     images: ["/api/og"],
-    },
-
   },
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={arrayFont.variable} suppressHydrationWarning>
-      <body className="min-h-screen overflow-x-hidden bg-[var(--theme-back)] text-[var(--theme-text)]">
+      <body className="min-h-screen overflow-x-hidden bg-black text-white">
         <Providers>
           {children}
         </Providers>
