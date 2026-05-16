@@ -69,7 +69,7 @@ export default function DitheringBackground() {
         offsetY={0}
         fit="cover"
         minPixelRatio={1}
-        maxPixelCount={2500000}
+        maxPixelCount={1500000}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(68,68,68,0.12),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0.4),rgba(0,0,0,0.8))]" />
     </div>

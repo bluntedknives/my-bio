@@ -34,12 +34,14 @@ export default function MusicPlayer() {
   const bassAverageRef = useRef(0);
   const bassPreviousRef = useRef(0);
   const pulseRef = useRef(0);
+  const progressFillRef = useRef<HTMLDivElement | null>(null);
+  const currentTimeRef = useRef<HTMLSpanElement | null>(null);
+  const durationRef = useRef<HTMLSpanElement | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [unlockRequested, setUnlockRequested] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
   const ensureAudioGraph = () => {
@@ -146,7 +148,8 @@ export default function MusicPlayer() {
 
     audio.src = currentTrack.src;
     audio.load();
-    setCurrentTime(0);
+    if (currentTimeRef.current) currentTimeRef.current.textContent = "0:00";
+    if (progressFillRef.current) progressFillRef.current.style.width = "0%";
     setDuration(0);
 
     if (isPlaying) {
@@ -161,12 +164,23 @@ export default function MusicPlayer() {
     if (!audio) return;
 
     const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-      setDuration(audio.duration || 0);
+      const cur = audio.currentTime;
+      const dur = audio.duration || 0;
+      if (progressFillRef.current) {
+        const percent = dur > 0 ? (cur / dur) * 100 : 0;
+        progressFillRef.current.style.width = `${percent}%`;
+      }
+      if (currentTimeRef.current) {
+        currentTimeRef.current.textContent = formatTime(cur);
+      }
     };
 
     const handleLoaded = () => {
-      setDuration(audio.duration || 0);
+      const dur = audio.duration || 0;
+      setDuration(dur);
+      if (durationRef.current) {
+        durationRef.current.textContent = formatTime(dur);
+      }
     };
 
     const handleEnded = () => {
@@ -223,10 +237,13 @@ export default function MusicPlayer() {
     if (!audio || !duration) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const percent = (event.clientX - rect.left) / rect.width;
-    audio.currentTime = Math.max(0, Math.min(duration, duration * percent));
+    const targetTime = Math.max(0, Math.min(duration, duration * percent));
+    audio.currentTime = targetTime;
+    
+    // Update UI immediately on seek
+    if (progressFillRef.current) progressFillRef.current.style.width = `${percent * 100}%`;
+    if (currentTimeRef.current) currentTimeRef.current.textContent = formatTime(targetTime);
   };
-
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -352,11 +369,15 @@ export default function MusicPlayer() {
 
       <div className="tui-player-progress">
         <div className="tui-progress-track" onClick={handleSeek}>
-          <div className="tui-progress-fill" style={{ width: `${progress}%` }} />
+          <div 
+            ref={progressFillRef}
+            className="tui-progress-fill" 
+            style={{ width: "0%" }} 
+          />
         </div>
         <div className="tui-player-time">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+          <span ref={currentTimeRef}>0:00</span>
+          <span ref={durationRef}>{formatTime(duration)}</span>
         </div>
       </div>
 

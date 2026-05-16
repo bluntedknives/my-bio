@@ -104,7 +104,7 @@ export default function Page() {
           tiltMaxAngleX={3}
           tiltMaxAngleY={3}
           perspective={2000}
-          transitionSpeed={2000}
+          transitionSpeed={1000}
           scale={1}
           gyroscope={true}
           className="w-full max-w-[800px]"
