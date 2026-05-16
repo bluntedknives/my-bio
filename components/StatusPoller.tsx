@@ -26,10 +26,6 @@ export default function StatusPoller() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(visitorData),
       })
-        .then((response) => response.json())
-        .then((data) => {
-          if (statusEl) statusEl.innerText = data.status;
-        })
         .catch(() => {
           // ignore
         });

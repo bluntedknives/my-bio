@@ -37,13 +37,14 @@ export default function DiscordStatus() {
           const handle = username ? `@${username}` : "";
           const status = payload.status ?? "offline";
 
-          const statusTargets = document.querySelectorAll<HTMLElement>(".discordStatus, .discord-status-dot");
+          const statusTargets = document.querySelectorAll<HTMLElement>(".discordStatus, .discord-status-dot, .tui-status-dot");
           statusTargets.forEach((node) => {
             if (node instanceof HTMLImageElement) {
               node.src = STATUS_ICONS[status] ?? STATUS_ICONS.offline;
               return;
             }
             node.style.background = STATUS_COLORS[status] ?? STATUS_COLORS.offline;
+            node.style.boxShadow = `0 0 10px ${STATUS_COLORS[status] ?? STATUS_COLORS.offline}44`;
           });
 
           const statusIconTargets = document.querySelectorAll<HTMLImageElement>(".discord-status-icon");
@@ -51,7 +52,7 @@ export default function DiscordStatus() {
             node.src = STATUS_ICONS[status] ?? STATUS_ICONS.offline;
           });
 
-          const statusTextTargets = document.querySelectorAll<HTMLElement>(".discord-status-text");
+          const statusTextTargets = document.querySelectorAll<HTMLElement>(".discord-status-text, #currentStatus");
           statusTextTargets.forEach((node) => {
             node.textContent = STATUS_LABELS[status] ?? STATUS_LABELS.offline;
           });

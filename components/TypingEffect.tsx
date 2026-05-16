@@ -2,8 +2,15 @@
 
 import { useEffect } from "react";
 
-export default function TypingEffect() {
+type TypingEffectProps = {
+  active?: boolean;
+  activeTab?: string;
+};
+
+export default function TypingEffect({ active = true, activeTab }: TypingEffectProps) {
   useEffect(() => {
+    if (!active || (activeTab && activeTab !== "bio")) return;
+
     const textsElement = document.getElementById("typingTexts");
     const textElement = document.getElementById("typingText");
     if (!textsElement || !textElement) return;
@@ -45,7 +52,7 @@ export default function TypingEffect() {
     return () => {
       timeouts.forEach((timeoutId) => window.clearTimeout(timeoutId));
     };
-  }, []);
+  }, [active, activeTab]);
 
   return null;
 }
