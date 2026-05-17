@@ -308,8 +308,8 @@ export default function MusicPlayer() {
       bassAverageRef.current = averageBass;
       bassPreviousRef.current = bassEnergy;
       pulseRef.current = Math.max(
-        pulseRef.current * 0.86,
-        Math.min(1, beatDelta * 5 + bassRise * 4 + totalEnergy * 0.35),
+        pulseRef.current * 0.82,
+        Math.min(1.5, beatDelta * 12 + bassRise * 8 + totalEnergy * 0.8),
       );
 
       document.dispatchEvent(
