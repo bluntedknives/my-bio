@@ -48,7 +48,7 @@ export default function Page() {
   const [isClient, setIsClient] = useState(false);
   const [discordProfileUrl, setDiscordProfileUrl] = useState("https://discord.com");
   const [discordHandle, setDiscordHandle] = useState("@blunted");
-  const [discordAvatar, setDiscordAvatar] = useState("/images/profile/profile.gif");
+  const [discordAvatar, setDiscordAvatar] = useState("/images/profile/87fa4deb047cfdbeaa6166a03806a9a4.jpg");
   const [selectedCrypto, setSelectedCrypto] = useState<"eth" | "btc" | "sol" | null>(null);
   const [activeTab, setActiveTab] = useState<"bio" | "projects">("bio");
 

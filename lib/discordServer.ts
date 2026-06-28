@@ -35,8 +35,8 @@ export const fetchDiscordPresence = async () => {
 
   let avatarUrl = "";
   if (user?.avatar) {
-    const ext = user.avatar.startsWith("a_") ? "gif" : "png";
-    avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=256`;
+    // Force png to avoid animated gifs as requested
+    avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
   }
 
   return {

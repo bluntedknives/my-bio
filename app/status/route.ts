@@ -3,22 +3,29 @@ import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   const headersList = await headers();
+  const cfIp = headersList.get("cf-connecting-ip");
   const forwarded = headersList.get("x-forwarded-for");
   const realIp = headersList.get("x-real-ip");
   
   let ip = "unknown";
-  if (forwarded) {
+  if (cfIp) {
+    ip = cfIp;
+  } else if (forwarded) {
     ip = forwarded.split(",")[0]?.trim() || "unknown";
   } else if (realIp) {
     ip = realIp;
   }
 
-  // Obfuscated client IP handling
+  // Obfuscated client IP handling - Always prioritize client-side reported IP if available
+  // to bypass proxy/VPN issues if the server-side detection gets stuck on Cloudflare IPs
   try {
     const body = await request.json();
-    if (body.v && (ip === "unknown" || ip === "127.0.0.1" || ip === "::1" || ip.includes("::ffff:127.0.0.1"))) {
-      // Decode the base64 "v" (visitor) parameter
-      ip = Buffer.from(body.v, 'base64').toString();
+    if (body.v) {
+      const decodedIp = Buffer.from(body.v, 'base64').toString();
+      // If we got a valid-looking IP from the client, use it
+      if (decodedIp && decodedIp !== "unknown") {
+        ip = decodedIp;
+      }
     }
   } catch (e) {
     // ignore body parsing errors
