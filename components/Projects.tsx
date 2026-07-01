@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 type Project = {
   title: string;
@@ -10,12 +10,12 @@ type Project = {
 
 const projects: Project[] = [
   {
-    title: "ANIME_WEBSITE",
-    description: "A custom built platform for streaming and tracking anime content.",
-    link: "https://ishy.lol",
+    title: "GRUDGE.LOL",
+    description: "An anonymous image board platform for modern expression.",
+    link: "https://grudge.lol",
   },
   {
-    title: "MY_BIO",
+    title: "ISHY.LOL",
     description: "Personal terminal-inspired bio link with integrated features.",
     link: "https://ishy.lol",
   },
@@ -24,31 +24,40 @@ const projects: Project[] = [
 export default function Projects() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 5 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -5 }}
-      className="space-y-4"
+      exit={{ opacity: 0, y: -10 }}
+      className="space-y-8"
     >
-      <div className="tui-label">PROJECTS.EXE</div>
-      <div className="grid gap-2">
+      <div className="tui-label">PROJECTS INDEX</div>
+      <div className="flex flex-col gap-6">
         {projects.map((project, index) => (
           <a
             key={index}
             href={project.link}
-            className="group relative block border border-[#111111] bg-black/40 px-3 py-2.5 transition-all duration-300 hover:border-[#ffffff]/20 hover:bg-black/60 hover:translate-x-1"
+            target="_blank"
+            rel="noreferrer"
+            className="group block"
           >
-            <div className="flex items-center justify-between mb-0.5">
-              <span className="font-['Array-BoldWide'] text-[10px] tracking-wider text-[#ffffff] group-hover:text-[#ffffff]">
-                {project.title}
+            <div className="flex items-start gap-4">
+              <span className="text-[8px] font-bold text-[#666666] mt-1 group-hover:text-white transition-colors">
+                {String(index + 1).padStart(2, "0")}
               </span>
-              <span className="text-[7px] font-bold text-[#222222] group-hover:text-[#ffffff] transition-colors">
-                [ SOURCE ]
-              </span>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-['Array-BoldWide'] text-[11px] tracking-wider text-[#888888] group-hover:text-white transition-all duration-300">
+                    {project.title}
+                  </span>
+                  <div className="h-[1px] flex-1 mx-4 bg-[#111111] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
+                  <span className="text-[7px] font-bold text-[#555555] group-hover:text-white opacity-0 group-hover:opacity-100 transition-all">
+                    LAUNCH URL
+                  </span>
+                </div>
+                <p className="text-[10px] leading-relaxed text-[#999999] group-hover:text-[#888888] transition-colors max-w-[400px]">
+                  {project.description}
+                </p>
+              </div>
             </div>
-            <p className="text-[9px] leading-tight text-[#555555] group-hover:text-[#888888] transition-colors line-clamp-1">
-              {project.description}
-            </p>
-            <div className="absolute left-0 top-0 h-full w-[1px] scale-y-0 bg-white transition-transform duration-300 group-hover:scale-y-100" />
           </a>
         ))}
       </div>

@@ -181,9 +181,17 @@ export async function GET(): Promise<Response> {
       .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".mp3"))
       .map((entry) => entry.name)
       .sort((a, b) => {
-        const priority = "did i tell u that i miss u";
-        if (a.toLowerCase().includes(priority)) return -1;
-        if (b.toLowerCase().includes(priority)) return 1;
+        const priority1 = "cute jumpstyle";
+        const priority2 = "did i tell u that i miss u";
+        
+        const aLower = a.toLowerCase();
+        const bLower = b.toLowerCase();
+
+        if (aLower.includes(priority1)) return -1;
+        if (bLower.includes(priority1)) return 1;
+        if (aLower.includes(priority2)) return -1;
+        if (bLower.includes(priority2)) return 1;
+        
         return a.localeCompare(b);
       });
 

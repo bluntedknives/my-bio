@@ -7,6 +7,7 @@ export { default as ClientEffects } from "./ClientEffects";
 export { default as DiscordStatus } from "./DiscordStatus";
 export { default as DiscordUserImage } from "./DiscordUserImage";
 export { default as PaperTextureVideo } from "./PaperTextureVideo";
+export { default as InteractiveTerminal } from "./InteractiveTerminal";
 export { default as Lockscreen } from "./Lockscreen";
 export { default as PlayerController } from "./PlayerController";
 export { default as PopupController } from "./PopupController";

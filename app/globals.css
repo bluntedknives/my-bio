@@ -20,370 +20,348 @@
   src: url('/font/Array-BoldWide.otf') format('opentype');
 }
 
+:root {
+  --theme-back: #000000;
+  --theme-front: #ffffff;
+  --theme-accent: #888888;
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+
 html, body {
-  background: transparent !important;
+  background: var(--theme-back);
   color: #888888;
-  min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto; /* Allow scrolling on mobile if content is tall */
-  font-family: 'Array-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing: -0.02em;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-.tui-container, main {
-  background: transparent !important;
-}
-
-/* TUI Card Styles - Classic Gray */
-
-.tui-card {
-  position: relative;
-  background-color: rgba(8, 8, 8, 0.85);
-  border: 1px solid #1a1a1a;
-  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
-  width: 100%;
-  backdrop-filter: blur(14px);
-  margin-bottom: 2rem;
-}
-
-.tui-layout {
-  display: flex;
-  flex-direction: column;
-}
-
-@media (min-width: 768px) {
-  .tui-layout {
-    flex-direction: row;
-    min-height: 400px;
-  }
-}
-
-.tui-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem; /* Compact for mobile */
-}
-
-@media (min-width: 768px) {
-  .tui-main {
-    padding: 2.5rem;
-    border-right: 1px solid #1a1a1a;
-  }
-}
-
-.tui-sidebar {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  background-color: rgba(6, 6, 6, 0.6);
-  border-top: 1px solid #1a1a1a; /* Divider on mobile */
-}
-
-@media (min-width: 768px) {
-  .tui-sidebar {
-    width: 280px;
-    border-top: none;
-  }
-}
-
-.tui-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .tui-header {
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-}
-
-.tui-avatar-frame {
-  width: 3.5rem;
-  height: 3.5rem;
-  border: 1px solid #222222;
-  padding: 0.2rem;
-  flex-shrink: 0;
-}
-
-@media (min-width: 768px) {
-  .tui-avatar-frame {
-    width: 4rem;
-    height: 4rem;
-  }
-}
-
-.tui-avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(1) brightness(0.75);
-}
-
-.tui-username {
-  font-size: 1.25rem;
-  line-height: 1.5rem;
-  color: #ffffff;
-  font-weight: 400;
-  text-transform: lowercase;
-  letter-spacing: -0.025em;
-  margin-bottom: 0.2rem;
-  font-family: 'Array-BoldWide', monospace;
-}
-
-@media (min-width: 768px) {
-  .tui-username {
-    font-size: 1.5rem;
-    line-height: 2rem;
-    margin-bottom: 0.25rem;
-  }
-}
-
-.tui-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.tui-status-dot {
-  width: 0.3rem;
-  height: 0.3rem;
-  background-color: #333333;
-  flex-shrink: 0;
-}
-
-.tui-label {
-  font-size: 8px;
-  color: #444444;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  margin-bottom: 0.75rem;
-  font-weight: 700;
-}
-
-.tui-bio-section {
-  margin-bottom: 1.5rem;
-  flex: 1;
-}
-
-@media (min-width: 768px) {
-  .tui-bio-section {
-    margin-bottom: 2rem;
-  }
-}
-
-.tui-bio-content {
-  font-size: 0.75rem;
-  line-height: 1.1rem;
-  color: #666666;
-  border: 1px solid #111111;
-  background-color: rgba(7, 7, 7, 0.7);
-  padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .tui-bio-content {
-    font-size: 0.8rem;
-    line-height: 1.2rem;
-    padding: 1.25rem;
-  }
-}
-
-.tui-social-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
-  background-color: #111111;
-  border: 1px solid #111111;
-  margin-top: auto;
-}
-
-.tui-social-link {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  background-color: #080808;
-  color: #444444;
-  transition: all 150ms ease;
-  height: 38px;
+  font-family: 'Array-Regular', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: -0.01em;
+  user-select: none;
 }
 
-.tui-social-link:hover {
-  background-color: #ffffff;
-  color: #000000;
-}
+/* Void Layout Components */
 
-/* TUI Player */
-
-.tui-player {
+.void-grid {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .tui-player {
-    padding: 1.5rem;
-  }
-}
-
-.tui-player-header {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-@media (min-width: 768px) {
-  .tui-player-header {
-    margin-bottom: 1.5rem;
-  }
-}
-
-.tui-player-visualizer {
-  height: 2.25rem;
+  min-height: 100vh;
   width: 100%;
-  background-color: #040404;
-  border: 1px solid #111111;
-  padding: 0.4rem;
 }
 
-@media (min-width: 768px) {
-  .tui-player-visualizer {
-    height: 2.5rem;
+@media (min-width: 1024px) {
+  .void-grid {
+    flex-direction: row;
   }
 }
 
-.tui-player-info {
-  margin-bottom: 1.25rem;
+.void-sidebar {
+  width: 100%;
+  padding: 2rem;
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 20;
 }
 
-@media (min-width: 768px) {
-  .tui-player-info {
-    margin-bottom: 1.5rem;
+@media (min-width: 1024px) {
+  .void-sidebar {
+    width: 320px;
+    height: 100vh;
+    position: fixed;
+    border-bottom: none;
+    border-right: 1px solid var(--glass-border);
   }
 }
 
-.tui-track-title {
-  color: #ffffff;
-  font-size: 0.7rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.2rem;
+.void-content {
+  flex: 1;
+  padding: 1.5rem;
 }
 
-@media (min-width: 768px) {
-  .tui-track-title {
-    font-size: 0.75rem;
+@media (min-width: 1024px) {
+  .void-content {
+    margin-left: 320px;
+    padding: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
-.tui-track-artist {
-  color: #555555;
-  font-size: 9px;
-  text-transform: uppercase;
-}
-
-@media (min-width: 768px) {
-  .tui-track-artist {
-    font-size: 10px;
-  }
-}
-
-.tui-player-progress {
-  margin-bottom: 1.25rem;
-}
-
-@media (min-width: 768px) {
-  .tui-player-progress {
-    margin-bottom: 1.5rem;
-  }
-}
-
-.tui-progress-track {
-  height: 0.2rem;
-  background-color: #111111;
+.void-panel {
+  width: 100%;
+  max-width: 800px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  padding: 3rem;
   position: relative;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.crypto-card {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
   cursor: pointer;
-  margin-bottom: 0.4rem;
 }
 
-.tui-progress-fill {
-  height: 100%;
-  background-color: #ffffff;
-  transition: all 300ms ease;
+.crypto-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
 }
 
-.tui-player-time {
+.crypto-label {
+  font-size: 8px;
+  color: #999999;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.crypto-address {
+  font-size: 9px;
+  color: #888888;
+  word-break: break-all;
+  font-family: ui-monospace, monospace;
+  line-height: 1.4;
+}
+
+.system-stat {
   display: flex;
   justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.stat-label {
   font-size: 8px;
-  color: #333333;
-  font-weight: 700;
+  color: #888888;
+  text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
-.tui-player-controls {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  background-color: #111111;
-  border: 1px solid #111111;
-  margin-bottom: 1rem;
-}
-
-.tui-btn, .tui-btn-main {
-  background-color: #080808;
-  color: #444444;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  font-size: 9px;
+.stat-value {
+  font-size: 8px;
+  color: #666666;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  transition: all 150ms ease;
 }
 
-.tui-btn:hover, .tui-btn-main:hover {
-  background-color: #111111;
-  color: #ffffff;
+/* Float Console Layout */
+
+.console-container {
+  width: 100%;
+  max-width: 500px;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  margin: 0 auto;
 }
 
-.tui-playlist-meta {
-  margin-top: 1rem;
-  text-align: center;
+.console-unit {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  max-height: 620px; 
+  position: relative;
+  overflow: hidden;
+}
+
+.console-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.console-nav {
+  display: flex;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.console-nav-btn {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #888888;
+  transition: all 0.2s ease;
+  border-right: 1px solid var(--glass-border);
+}
+
+.console-nav-btn:last-child {
+  border-right: none;
+}
+
+.console-nav-btn.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.console-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.console-body::-webkit-scrollbar {
+  display: none;
+}
+
+.console-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Typography & Elements */
+
+
+.tui-label {
   font-size: 7px;
-  color: #222222;
-  letter-spacing: 0.3em;
+  color: #999999;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
   font-weight: 700;
+}
+
+.tui-username {
+  font-size: 1.75rem;
+  color: #ffffff;
+  font-family: 'Array-BoldWide', monospace;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.nav-item {
+  display: block;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  font-weight: 700;
+  padding: 0.75rem 0;
+  color: #888888;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
+  width: fit-content;
+}
+
+.nav-item:hover, .nav-item.active {
+  color: #ffffff;
+  padding-left: 0.5rem;
+}
+
+.nav-item.active {
+  border-bottom: 1px solid #ffffff;
+}
+
+/* Animations */
+
+@keyframes textShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer-text {
+  color: #ffffff;
+  background: linear-gradient(
+    90deg,
+    #999999 0%,
+    #999999 40%,
+    #ffffff 50%,
+    #999999 60%,
+    #999999 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 3s linear infinite;
+  display: inline-block;
+}
+
+.bio-word {
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+/* Music Player Refinement */
+
+.void-player {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.visualizer-container {
+  height: 40px;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.void-track-title {
+  color: #ffffff;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.void-track-artist {
+  color: #999999;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Socials */
+
+.void-socials {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.void-social-link {
+  color: #888888;
+  transition: all 0.2s ease;
+}
+
+.void-social-link:hover {
+  color: #ffffff;
+  transform: translateY(-2px);
 }
 
 /* Overlays */
-
-.tui-view-counter {
-  @apply fixed right-4 top-4 z-20 flex items-center px-0 py-0 text-[#444444];
-}
-
-@media (min-width: 768px) {
-  .tui-view-counter {
-    @apply right-6 top-6;
-  }
-}
-
-.tui-view-counter:hover {
-  @apply text-white transition-all;
-}
 
 #lockscreen {
   position: fixed;
@@ -398,7 +376,7 @@ html, body {
 
 .click-text {
   font-size: 10px;
-  color: #222222;
+  color: #666666;
   letter-spacing: 0.4em;
   text-transform: uppercase;
   font-weight: 700;
@@ -406,4 +384,21 @@ html, body {
 
 * {
   cursor: crosshair !important;
+}
+
+.tui-view-counter {
+  @apply fixed right-8 top-8 z-50 flex items-center text-[#666666];
+}
+
+.tui-view-counter:hover {
+  @apply text-white transition-all;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

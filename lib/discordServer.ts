@@ -11,7 +11,7 @@ type LanyardResponse = {
   };
 };
 
-const FALLBACK_DISCORD_USER_ID = "1462897238559822044";
+const FALLBACK_DISCORD_USER_ID = "1521196393606156578";
 
 export const getDiscordUserId = () => {
   return process.env.DISCORD_USER_ID || process.env.NEXT_PUBLIC_DISCORD_USER_ID || FALLBACK_DISCORD_USER_ID;

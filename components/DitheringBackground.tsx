@@ -58,7 +58,7 @@ export default function DitheringBackground() {
         className="h-full w-full"
         style={{ width: "100%", height: "100%" }}
         colorBack="#000000"
-        colorFront="#333333"
+        colorFront="#888888"
         shape="warp"
         type="4x4"
         pxSize={2.5}
@@ -71,7 +71,7 @@ export default function DitheringBackground() {
         minPixelRatio={1}
         maxPixelCount={1500000}
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(68,68,68,0.12),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0.4),rgba(0,0,0,0.8))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(153,153,153,0.12),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0.4),rgba(0,0,0,0.8))]" />
     </div>
   );
 }

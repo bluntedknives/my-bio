@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={arrayFont.variable} suppressHydrationWarning>
-      <body className="min-h-screen overflow-x-hidden bg-black text-white">
+      <body className="min-h-screen overflow-x-hidden bg-black text-white" suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>

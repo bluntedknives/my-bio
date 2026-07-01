@@ -36,12 +36,10 @@ export default function MusicPlayer() {
   const pulseRef = useRef(0);
   const progressFillRef = useRef<HTMLDivElement | null>(null);
   const currentTimeRef = useRef<HTMLSpanElement | null>(null);
-  const durationRef = useRef<HTMLSpanElement | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [unlockRequested, setUnlockRequested] = useState(false);
-  const [isUnlocked, setIsUnlocked] = useState(false);
   const [duration, setDuration] = useState(0);
 
   const ensureAudioGraph = () => {
@@ -92,7 +90,13 @@ export default function MusicPlayer() {
   }, []);
 
   useEffect(() => {
+    const handleUnlock = () => {
+      setUnlockRequested(true);
+    };
+    document.addEventListener("bio:unlock", handleUnlock);
+
     return () => {
+      document.removeEventListener("bio:unlock", handleUnlock);
       document.dispatchEvent(
         new CustomEvent(AUDIO_REACTIVE_EVENT, {
           detail: { bass: 0, energy: 0, pulse: 0, time: performance.now() },
@@ -100,23 +104,10 @@ export default function MusicPlayer() {
       );
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
       }
       analyserRef.current?.disconnect();
       sourceRef.current?.disconnect();
       audioContextRef.current?.close().catch(() => {});
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleUnlock = () => {
-      setIsUnlocked(true);
-      setUnlockRequested(true);
-    };
-    document.addEventListener("bio:unlock", handleUnlock);
-
-    return () => {
-      document.removeEventListener("bio:unlock", handleUnlock);
     };
   }, []);
 
@@ -176,11 +167,7 @@ export default function MusicPlayer() {
     };
 
     const handleLoaded = () => {
-      const dur = audio.duration || 0;
-      setDuration(dur);
-      if (durationRef.current) {
-        durationRef.current.textContent = formatTime(dur);
-      }
+      setDuration(audio.duration || 0);
     };
 
     const handleEnded = () => {
@@ -207,7 +194,6 @@ export default function MusicPlayer() {
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.paused) {
-      setIsUnlocked(true);
       audio.muted = false;
       audio.volume = 1;
       ensureAudioGraph();
@@ -239,10 +225,6 @@ export default function MusicPlayer() {
     const percent = (event.clientX - rect.left) / rect.width;
     const targetTime = Math.max(0, Math.min(duration, duration * percent));
     audio.currentTime = targetTime;
-    
-    // Update UI immediately on seek
-    if (progressFillRef.current) progressFillRef.current.style.width = `${percent * 100}%`;
-    if (currentTimeRef.current) currentTimeRef.current.textContent = formatTime(targetTime);
   };
 
   useEffect(() => {
@@ -252,8 +234,7 @@ export default function MusicPlayer() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const barCount = 10;
-    const minHeight = 2;
+    const barCount = 12;
     const barGap = 4;
 
     if (levelsRef.current.length !== barCount) {
@@ -323,9 +304,13 @@ export default function MusicPlayer() {
         }),
       );
 
+      // Get theme accent color
+      const themeAccent = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent').trim() || '#ffffff';
+
       const totalGap = barGap * (barCount - 1);
       const barWidth = Math.max(2, (width - totalGap) / barCount);
-      ctx.fillStyle = "#ffffff";
+      
+      ctx.fillStyle = themeAccent;
 
       for (let i = 0; i < barCount; i += 1) {
         const active = isPlayingRef.current && dataArray;
@@ -334,9 +319,9 @@ export default function MusicPlayer() {
         const target = Math.min(1, normalized * 1.5);
         const smoothed = (levelsRef.current[i] ?? 0) * 0.8 + target * 0.2;
         levelsRef.current[i] = smoothed;
-        const barHeight = Math.max(minHeight, smoothed * (height - 2));
+        const barHeight = Math.max(2, smoothed * height);
         const x = i * (barWidth + barGap);
-        const y = height - barHeight;
+        const y = (height - barHeight) / 2; // Center bars vertically
         ctx.fillRect(x, y, barWidth, barHeight);
       }
 
@@ -348,49 +333,43 @@ export default function MusicPlayer() {
     return () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
       }
     };
   }, []);
 
   return (
-    <div className="tui-player">
-      <div className="tui-player-header">
-        <div className="tui-label">AUDIO.SYS</div>
-        <div className="tui-player-visualizer">
-          <canvas ref={canvasRef} className="h-full w-full" />
-        </div>
+    <div className="void-player">
+      <div className="tui-label">AUDIO.SYS</div>
+      
+      <div className="visualizer-container">
+        <canvas ref={canvasRef} className="h-full w-full" />
       </div>
 
-      <div className="tui-player-info">
-        <div className="tui-track-title">{currentTrack?.title || "NO MEDIA"}</div>
-        <div className="tui-track-artist">{currentTrack?.artist || "UNKNOWN SOURCE"}</div>
+      <div className="mb-4">
+        <div className="void-track-title">{currentTrack?.title || "NO MEDIA"}</div>
+        <div className="void-track-artist">{currentTrack?.artist || "UNKNOWN SOURCE"}</div>
       </div>
 
-      <div className="tui-player-progress">
-        <div className="tui-progress-track" onClick={handleSeek}>
+      <div className="mb-4">
+        <div className="h-[1px] w-full bg-[#111111] relative cursor-pointer mb-2" onClick={handleSeek}>
           <div 
             ref={progressFillRef}
-            className="tui-progress-fill" 
+            className="h-full bg-[var(--theme-accent)] transition-all duration-300" 
             style={{ width: "0%" }} 
           />
         </div>
-        <div className="tui-player-time">
+        <div className="flex justify-between text-[7px] text-[#666666] font-bold tracking-widest">
           <span ref={currentTimeRef}>0:00</span>
-          <span ref={durationRef}>{formatTime(duration)}</span>
+          <span>{formatTime(duration)}</span>
         </div>
       </div>
 
-      <div className="tui-player-controls">
-        <button onClick={playPrev} className="tui-btn">BACK</button>
-        <button onClick={togglePlay} className="tui-btn-main">
+      <div className="grid grid-cols-3 gap-[1px] bg-[#111111] border border-[#111111]">
+        <button onClick={playPrev} className="bg-black py-2 text-[8px] font-bold tracking-widest text-[#888888] hover:text-white transition-colors">BACK</button>
+        <button onClick={togglePlay} className="bg-black py-2 text-[8px] font-bold tracking-widest text-[#888888] hover:text-white transition-colors">
           {isPlaying ? "PAUSE" : "PLAY"}
         </button>
-        <button onClick={playNext} className="tui-btn">NEXT</button>
-      </div>
-
-      <div className="tui-playlist-meta">
-        TRACK {currentIndex + 1} OF {tracks.length}
+        <button onClick={playNext} className="bg-black py-2 text-[8px] font-bold tracking-widest text-[#888888] hover:text-white transition-colors">NEXT</button>
       </div>
 
       <audio ref={audioRef} />

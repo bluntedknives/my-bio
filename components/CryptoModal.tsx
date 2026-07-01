@@ -64,15 +64,15 @@ export default function CryptoModal({ selectedCrypto, onClose }: CryptoModalProp
               <p className="break-all font-mono text-xs text-[#666666] transition-colors group-hover:text-white">
                 {data.address}
               </p>
-              <p className="mt-2 text-[10px] uppercase tracking-tighter text-[#444444]">Click to copy address</p>
-            </div>
-          </div>
-          <button 
-            onClick={onClose}
-            className="w-full border border-[#1a1a1a] bg-[#0c0c0c] py-3 text-xs font-bold uppercase tracking-widest text-[#444444] transition-all hover:bg-white hover:text-black"
-          >
-            Close
-          </button>
+              <p className="mt-2 text-[10px] uppercase tracking-tighter text-[#999999]">Click to copy address</p>
+              </div>
+              </div>
+              <button 
+              onClick={onClose}
+              className="w-full border border-[#1a1a1a] bg-[#0c0c0c] py-3 text-xs font-bold uppercase tracking-widest text-[#999999] transition-all hover:bg-white hover:text-black"
+              >
+              Close
+              </button>
         </motion.div>
       </div>
     </AnimatePresence>

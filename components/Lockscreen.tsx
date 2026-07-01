@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-export default function Lockscreen() {
+type LockscreenProps = {
+  onUnlock?: () => void;
+};
+
+export default function Lockscreen({ onUnlock }: LockscreenProps) {
   const [visible, setVisible] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
 
@@ -12,11 +16,9 @@ export default function Lockscreen() {
     setUnlocked(true);
     
     document.dispatchEvent(new CustomEvent("bio:unlock"));
-
-    const container = document.getElementById("container");
-    if (container) {
-      container.style.visibility = "visible";
-      container.style.opacity = "1";
+    
+    if (onUnlock) {
+      onUnlock();
     }
 
     setTimeout(() => {
@@ -47,7 +49,8 @@ export default function Lockscreen() {
             animate={{
               backgroundPosition: ["200% center", "-200% center"],
             }}
-            className="click-text bg-[length:200%_100%] bg-gradient-to-r from-[#444444] via-[#ffffff] to-[#444444] bg-clip-text text-transparent"
+            className="click-text bg-[length:200%_100%] bg-gradient-to-r from-[#999999] via-[#ffffff] to-[#999999] bg-clip-text text-[#ffffff]"
+            style={{ WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
             transition={{
               duration: 2.5,
               ease: "linear",
