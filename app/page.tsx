@@ -94,11 +94,10 @@ export default function Page() {
         .then((data: { username?: string; displayName?: string; avatarUrl?: string; status?: string }) => {
           if (!active) return;
           if (data.avatarUrl) setDiscordAvatar(data.avatarUrl);
-          const username = data.username?.trim() || data.displayName?.trim() || "";
-          if (username) {
-            setDiscordHandle(`@${username}`);
-            setDiscordName(username);
-          }
+          const username = data.username?.trim() || "";
+          if (username) setDiscordHandle(`@${username}`);
+          const displayName = data.displayName?.trim() || username;
+          if (displayName) setDiscordName(displayName);
           const status = data.status;
           if (status === "online" || status === "idle" || status === "dnd" || status === "offline") {
             setDiscordStatus(status);
