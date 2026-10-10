@@ -150,6 +150,9 @@ export default function Page() {
                   <span className="bio-kicker-age">owner</span>
                 </div>
                 <h1 className="bio-name">{discordName}</h1>
+              </div>
+              <div className="bio-hero-aside">
+                <Clock />
                 <div className="bio-status">
                   <span className="bio-status-pill">
                     <img src="/images/ui/custom-icon.png" alt="" className="bio-status-icon" />
@@ -161,7 +164,6 @@ export default function Page() {
                   </span>
                 </div>
               </div>
-              <Clock />
             </div>
           </motion.header>
 
