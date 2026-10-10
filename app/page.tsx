@@ -76,7 +76,6 @@ export default function Page() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [discordHandle, setDiscordHandle] = useState("@whosbleedingg");
   const [discordName, setDiscordName] = useState("blunted");
-  const [discordAvatar, setDiscordAvatar] = useState("/images/profile/87fa4deb047cfdbeaa6166a03806a9a4.jpg");
   const [selectedCrypto, setSelectedCrypto] = useState<"eth" | "btc" | "sol" | null>(null);
   const [showTerminal, setShowTerminal] = useState(false);
 
@@ -90,9 +89,8 @@ export default function Page() {
 
     fetch("/api/discord-user", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data: { username?: string; displayName?: string; avatarUrl?: string }) => {
+      .then((data: { username?: string; displayName?: string }) => {
         if (!active) return;
-        if (data.avatarUrl) setDiscordAvatar(data.avatarUrl);
         const username = data.username?.trim() || data.displayName?.trim() || "";
         if (username) {
           setDiscordHandle(`@${username}`);
@@ -145,19 +143,18 @@ export default function Page() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="bio-hero-head">
-              <div className="bio-avatar-wrap">
-                <img src={discordAvatar} alt="avatar" className="bio-avatar" />
-              </div>
               <div className="bio-id">
                 <div className="bio-kicker">
-                  hey there
+                  wazup
                   <span className="bio-kicker-sep">·</span>
-                  <span className="bio-kicker-age">19 yo</span>
+                  <span className="bio-kicker-age">owner</span>
                 </div>
                 <h1 className="bio-name">{discordName}</h1>
                 <div className="bio-status">
-                  <img src="/images/ui/custom-icon.png" alt="" className="bio-status-icon" />
-                  <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
+                  <span className="bio-status-pill">
+                    <img src="/images/ui/custom-icon.png" alt="" className="bio-status-icon" />
+                    <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
+                  </span>
                   <span className="bio-status-dot-wrap">
                     <span className="tui-status-dot" />
                     <span className="bio-status-label">Connecting…</span>
