@@ -140,13 +140,16 @@ export default function Page() {
             animate={isUnlocked ? "show" : "hidden"}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
+            <div className="bio-hero-pin">
+              <img src="/images/ui/custom-icon.png" alt="" className="bio-handle-icon" />
+              <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
+            </div>
             <div className="bio-kicker">
               wazup
               <span className="bio-kicker-sep">·</span>
               <span className="bio-kicker-age">owner</span>
             </div>
             <h1 className="bio-name">{discordName}</h1>
-            <div className="bio-handle" id="currentStatusHandle">{discordHandle}</div>
             <Clock />
           </motion.header>
 

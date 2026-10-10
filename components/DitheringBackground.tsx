@@ -40,18 +40,33 @@ export default function DitheringBackground() {
   const shaderRef = useRef<PaperShaderElement | null>(null);
 
   useEffect(() => {
+    // Apply an accent color to the shader, retrying until the mount is ready.
+    const applyAccent = (accent: string) => {
+      if (!accent) return;
+      const [r, g, b] = hexToRgb(accent);
+      const set = () => {
+        const mount = shaderRef.current?.paperShaderMount;
+        if (!mount) return false;
+        mount.setUniforms({
+          u_colorFront: [r, g, b, 1],
+          // Near-black but tinted, so the whole field shifts subtly with the art.
+          u_colorBack: [r * 0.12, g * 0.12, b * 0.12, 1],
+        });
+        return true;
+      };
+      if (set()) return;
+      let tries = 0;
+      const tick = () => {
+        if (set() || ++tries > 60) return;
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+
     // Recolor the actual shader (not an overlay) whenever the track changes.
     const handleAccent = (event: Event) => {
-      const mount = shaderRef.current?.paperShaderMount;
       const accent = (event as CustomEvent<{ accent: string }>).detail?.accent;
-      if (!mount || !accent) return;
-
-      const [r, g, b] = hexToRgb(accent);
-      mount.setUniforms({
-        u_colorFront: [r, g, b, 1],
-        // Near-black but tinted, so the whole field shifts subtly with the art.
-        u_colorBack: [r * 0.12, g * 0.12, b * 0.12, 1],
-      });
+      applyAccent(accent);
     };
 
     const handleAudioReactive = (event: Event) => {
@@ -76,6 +91,13 @@ export default function DitheringBackground() {
 
     document.addEventListener(ACCENT_EVENT, handleAccent);
     document.addEventListener(AUDIO_REACTIVE_EVENT, handleAudioReactive);
+
+    // On mount, adopt whatever accent is already live so the background is
+    // tinted from the first frame instead of starting neutral/white.
+    const initial = getComputedStyle(document.documentElement)
+      .getPropertyValue("--accent")
+      .trim();
+    if (initial) applyAccent(initial);
 
     return () => {
       document.removeEventListener(ACCENT_EVENT, handleAccent);

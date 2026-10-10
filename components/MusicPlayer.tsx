@@ -21,6 +21,30 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
+const ACCENT_CACHE_KEY = "bio-accent-cache";
+const ACCENT_LAST_KEY = "bio-accent-last";
+
+// Album accent is deterministic per cover, so cache it to avoid a white flash
+// on every load while the image is fetched and sampled.
+const readCachedAccent = (image?: string): string | null => {
+  if (!image || typeof window === "undefined") return null;
+  try {
+    const cache = JSON.parse(localStorage.getItem(ACCENT_CACHE_KEY) || "{}");
+    return typeof cache[image] === "string" ? cache[image] : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedAccent = (image: string | undefined, accent: string) => {
+  if (!image || typeof window === "undefined") return;
+  try {
+    const cache = JSON.parse(localStorage.getItem(ACCENT_CACHE_KEY) || "{}");
+    cache[image] = accent;
+    localStorage.setItem(ACCENT_CACHE_KEY, JSON.stringify(cache));
+  } catch {}
+};
+
 // Convert a sampled RGB color into a display-ready accent while preserving
 // its true hue. Saturation/value are only nudged into a readable band, so an
 // art with no red never yields red.
@@ -111,11 +135,21 @@ export default function MusicPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [unlockRequested, setUnlockRequested] = useState(false);
   const [duration, setDuration] = useState(0);
-  const [accent, setAccent] = useState("#ffffff");
+  const [accent, setAccent] = useState(() => {
+    if (typeof window === "undefined") return "#ffffff";
+    try {
+      return localStorage.getItem(ACCENT_LAST_KEY) || "#ffffff";
+    } catch {
+      return "#ffffff";
+    }
+  });
 
   useEffect(() => {
     accentRef.current = accent;
     document.documentElement.style.setProperty("--accent", accent);
+    try {
+      localStorage.setItem(ACCENT_LAST_KEY, accent);
+    } catch {}
     document.dispatchEvent(
       new CustomEvent(ACCENT_EVENT, { detail: { accent } })
     );
@@ -126,6 +160,14 @@ export default function MusicPlayer() {
   useEffect(() => {
     const image = currentTrack?.image;
     if (!image) return;
+
+    // Use the cached accent immediately if we've sampled this cover before.
+    const cached = readCachedAccent(image);
+    if (cached) {
+      setAccent(cached);
+      return;
+    }
+
     let cancelled = false;
 
     const img = new Image();
@@ -187,9 +229,12 @@ export default function MusicPlayer() {
         if (!best && mostSaturated && bestSat >= 0.12) best = mostSaturated;
 
         if (best) {
-          setAccent(toDisplayColor(best.r, best.g, best.b));
+          const resolved = toDisplayColor(best.r, best.g, best.b);
+          writeCachedAccent(image, resolved);
+          setAccent(resolved);
         } else {
           // Genuinely monochrome art: stay neutral rather than invent a hue.
+          writeCachedAccent(image, "#8f8f8f");
           setAccent("#8f8f8f");
         }
       } catch {}
