@@ -84,15 +84,222 @@ body {
     linear-gradient(180deg, rgba(4, 4, 6, 0.34), rgba(4, 4, 6, 0.62));
 }
 
+/* ---------- Stage (cosmin-style fixed viewport + section rail) ---------- */
+
+.bio-stage {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  flex: 0 1 auto;
+  min-height: 0;
+  height: min(52vh, 360px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bio-panel {
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  will-change: transform, opacity, filter;
+}
+
+.bio-panel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fixed dock: anchors the music player so it never jumps between sections. */
+.bio-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 2.4rem;
+  transform: translateX(-50%);
+  width: calc(100% - 2.5rem);
+  max-width: 440px;
+  z-index: 10;
+}
+
+
+/* Vertical icon rail with a sliding indicator */
+.bio-nav {
+  position: fixed;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%) translateX(-14px);
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.25s, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.25s;
+}
+
+.bio-nav.is-in {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.bio-nav-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 13, 0.6),
+    rgba(10, 10, 13, 0.44)
+  );
+  box-shadow: var(--lift), inset 0 0 0 1px var(--glass-border),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(22px) saturate(1.5) brightness(0.92);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5) brightness(0.92);
+}
+
+.bio-nav-indicator {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--accent-bg-hover);
+  box-shadow: inset 0 0 0 1px var(--accent-border),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(calc(var(--i, 0) * (34px + 0.25rem)));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.6s ease, box-shadow 0.6s ease;
+  pointer-events: none;
+}
+
+.bio-nav-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--btn-text);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.bio-nav-btn:hover {
+  opacity: 1;
+  color: #ffffff;
+}
+
+.bio-nav-btn.is-active {
+  opacity: 1;
+  color: #ffffff;
+}
+
+.bio-nav-tip {
+  position: absolute;
+  left: calc(100% + 0.55rem);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  padding: 0.24rem 0.5rem;
+  border-radius: 7px;
+  background: rgba(8, 8, 10, 0.9);
+  box-shadow: inset 0 0 0 1px var(--glass-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-family: ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffffff;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.bio-nav-btn:hover .bio-nav-tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Section progress dots, sitting just above the dock */
+.bio-stage-progress {
+  position: fixed;
+  left: 50%;
+  bottom: 1.15rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.35s;
+}
+
+.bio-stage-progress.is-in {
+  opacity: 1;
+}
+
+.bio-stage-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.bio-stage-dot.is-on {
+  background: var(--accent);
+  transform: scale(1.35);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+@media (max-width: 620px) {
+  .bio-nav {
+    left: 50%;
+    top: 1rem;
+    bottom: auto;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  .bio-nav.is-in {
+    transform: translateX(-50%) translateY(0);
+  }
+  .bio-nav-list {
+    flex-direction: row;
+  }
+  .bio-nav-indicator {
+    top: 0.3rem;
+    left: 0.3rem;
+    transform: translateX(calc(var(--i, 0) * (34px + 0.25rem)));
+  }
+  .bio-nav-tip {
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 0.5rem);
+    transform: translateX(-50%) translateY(4px);
+  }
+  .bio-nav-btn:hover .bio-nav-tip {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 /* ---------- Scroll column (cosmin / guns.lol style) ---------- */
 
 .bio-root {
-  position: relative;
-  min-height: 100dvh;
-  width: 100%;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 3rem 1.25rem 4rem;
+  padding: 2rem 1.25rem 19rem;
 }
 
 .bio-reveal {
@@ -706,7 +913,9 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background-color: #050506;
+  background-color: rgba(5, 5, 6, 0.72);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -947,4 +1156,30 @@ input,
 .bio-project,
 [role="button"] {
   cursor: pointer;
+}
+
+/* Shorter viewports: trim reserved dock space so the fixed dock never crowds
+   the panel. Kept last to override the base .bio-root padding above. */
+@media (max-height: 720px) {
+  .bio-root {
+    padding-bottom: 15rem;
+  }
+  .bio-stage {
+    height: min(46vh, 320px);
+  }
+}
+
+@media (max-height: 600px) {
+  .bio-root {
+    padding-bottom: 12rem;
+  }
+  .bio-stage {
+    height: min(42vh, 250px);
+  }
+  .bio-dock {
+    bottom: 1.1rem;
+  }
+  .bio-stage-progress {
+    bottom: 0.5rem;
+  }
 }

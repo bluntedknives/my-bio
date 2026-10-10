@@ -12,6 +12,7 @@ import CryptoModal from "../components/CryptoModal";
 import ViewCounter from "../components/ViewCounter";
 import Projects from "../components/Projects";
 import InteractiveTerminal from "../components/InteractiveTerminal";
+import Stage, { type SectionId } from "../components/Stage";
 
 const DitheringBackground = dynamic(() => import("../components/DitheringBackground"), {
   ssr: false,
@@ -65,20 +66,15 @@ const WALLETS = [
   { name: "SOL", addr: "3mG96WjgDNaj1R8XkxifheoBsoPisVTKwDHFo4ErMeRy", color: "#14F195", icon: solIcon, key: "sol" as const },
 ];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0 },
-};
-
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [activeSection, setActiveSection] = useState<SectionId>("about");
   const [discordHandle, setDiscordHandle] = useState("@whosbleedingg");
   const [discordName, setDiscordName] = useState("blunted");
   const [discordAvatar, setDiscordAvatar] = useState("");
   const [discordStatus, setDiscordStatus] = useState<"online" | "idle" | "dnd" | "offline">("offline");
   const [selectedCrypto, setSelectedCrypto] = useState<"eth" | "btc" | "sol" | null>(null);
-  const [showTerminal, setShowTerminal] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -142,150 +138,27 @@ export default function Page() {
       <CryptoModal selectedCrypto={selectedCrypto} onClose={() => setSelectedCrypto(null)} />
       <DitheringBackground />
 
-      <div className={`bio-reveal ${isUnlocked ? "is-in" : ""}`}>
-        <div className="bio-column">
-          {/* Hero */}
-          <motion.header
-            className="bio-hero"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="bio-hero-pin">
-              <img src="/images/ui/custom-icon.png" alt="" className="bio-handle-icon" />
-              <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
-              <span className={`bio-status-dot bio-status-${discordStatus}`} />
-            </div>
-            {discordAvatar && (
-              <img
-                src={discordAvatar}
-                alt=""
-                className="bio-hero-avatar"
-                referrerPolicy="no-referrer"
-              />
-            )}
-            <div className="bio-kicker">
-              wazup
-              <span className="bio-kicker-sep">·</span>
-              <span className="bio-kicker-age">owner</span>
-            </div>
-            <h1 className="bio-name">{discordName}</h1>
-            <Clock />
-          </motion.header>
-
-          {/* Music — always mounted so playback never stops */}
-          <motion.section
-            className="bio-section"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          >
+      <Stage
+        active={activeSection}
+        onChange={setActiveSection}
+        locked={!isUnlocked}
+        dock={
+          <div className="bio-dock">
             <MusicPlayer />
-          </motion.section>
-
-          {/* Projects */}
-          <motion.section
-            className="bio-section"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Projects />
-          </motion.section>
-
-          {/* Socials */}
-          <motion.section
-            className="bio-section"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="section-label">Socials</div>
-            <div className="grid grid-cols-1 gap-2">
-              {SOCIALS.map((s) => (
-                <a key={s.name} href={s.link} target="_blank" rel="noreferrer" className="bio-row group">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="bio-row-icon scale-90">{s.icon}</span>
-                    <span className="bio-row-name">{s.name}</span>
-                  </div>
-                  <span className="bio-row-value truncate">{s.handle}</span>
-                </a>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* Wallets */}
-          <motion.section
-            className="bio-section"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="section-label">Wallets</div>
-            <div className="grid grid-cols-1 gap-2">
-              {WALLETS.map((c) => (
-                <div key={c.name} onClick={() => setSelectedCrypto(c.key)} className="bio-row group">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="bio-row-icon scale-90">{c.icon}</span>
-                    <span className="bio-row-name">{c.name}</span>
-                  </div>
-                  <span className="bio-row-value truncate">{c.addr.substring(0, 10)}…{c.addr.slice(-4)}</span>
-                </div>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* Terminal toggle */}
-          <motion.section
-            className="bio-section"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, delay: 0.36, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <button
-              className="bio-control w-full"
-              onClick={() => setShowTerminal((v) => !v)}
-            >
-              <span className="font-mono text-[0.7rem]">{showTerminal ? "Close terminal" : "Open terminal"}</span>
-            </button>
-            {showTerminal && (
-              <div className="bio-terminal mt-3">
-                <InteractiveTerminal onExit={() => setShowTerminal(false)} />
-              </div>
-            )}
-          </motion.section>
-
-          {/* Footer */}
-          <footer className="bio-foot">
-            <div className="flex items-center gap-2">
-              <button onClick={() => setSelectedCrypto("eth")} className="bio-pill" title="Ethereum">{ethIcon}</button>
-              <button onClick={() => setSelectedCrypto("btc")} className="bio-pill" title="Bitcoin">{btcIcon}</button>
-              <button onClick={() => setSelectedCrypto("sol")} className="bio-pill" title="Solana">{solIcon}</button>
-            </div>
-            <span className="bio-foot-note">with love</span>
-          </footer>
-
-          {/* Scroll cue */}
-          <motion.div
-            className="bio-scroll-cue"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, delay: 0.42, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="bio-scroll-text">scroll</span>
-            <span className="bio-scroll-track">
-              <span className="bio-scroll-dot" />
-            </span>
-          </motion.div>
-        </div>
-      </div>
+          </div>
+        }
+      >
+        {(section) => (
+          <SectionContent
+            section={section}
+            discordHandle={discordHandle}
+            discordName={discordName}
+            discordAvatar={discordAvatar}
+            discordStatus={discordStatus}
+            onOpenWallet={setSelectedCrypto}
+          />
+        )}
+      </Stage>
 
       {/* Views — pinned to the corner */}
       <div className={`bio-views ${isUnlocked ? "is-in" : ""}`}>
@@ -293,4 +166,116 @@ export default function Page() {
       </div>
     </div>
   );
+}
+
+type SectionContentProps = {
+  section: SectionId;
+  discordHandle: string;
+  discordName: string;
+  discordAvatar: string;
+  discordStatus: "online" | "idle" | "dnd" | "offline";
+  onOpenWallet: (key: "eth" | "btc" | "sol") => void;
+};
+
+function SectionContent({
+  section,
+  discordHandle,
+  discordName,
+  discordAvatar,
+  discordStatus,
+  onOpenWallet,
+}: SectionContentProps) {
+  switch (section) {
+    case "about":
+      return (
+        <motion.header
+          className="bio-hero"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="bio-hero-pin">
+            <img src="/images/ui/custom-icon.png" alt="" className="bio-handle-icon" />
+            <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
+            <span className={`bio-status-dot bio-status-${discordStatus}`} />
+          </div>
+          {discordAvatar && (
+            <img
+              src={discordAvatar}
+              alt=""
+              className="bio-hero-avatar"
+              referrerPolicy="no-referrer"
+            />
+          )}
+          <div className="bio-kicker">
+            wazup
+            <span className="bio-kicker-sep">·</span>
+            <span className="bio-kicker-age">owner</span>
+          </div>
+          <h1 className="bio-name">{discordName}</h1>
+          <Clock />
+        </motion.header>
+      );
+
+    case "projects":
+      return (
+        <section className="bio-section">
+          <Projects />
+        </section>
+      );
+
+    case "socials":
+      return (
+        <section className="bio-section">
+          <div className="section-label">Socials</div>
+          <div className="grid grid-cols-1 gap-2">
+            {SOCIALS.map((s) => (
+              <a key={s.name} href={s.link} target="_blank" rel="noreferrer" className="bio-row group">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="bio-row-icon scale-90">{s.icon}</span>
+                  <span className="bio-row-name">{s.name}</span>
+                </div>
+                <span className="bio-row-value truncate">{s.handle}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      );
+
+    case "wallets":
+      return (
+        <section className="bio-section">
+          <div className="section-label">Wallets</div>
+          <div className="grid grid-cols-1 gap-2">
+            {WALLETS.map((c) => (
+              <div key={c.name} onClick={() => onOpenWallet(c.key)} className="bio-row group">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="bio-row-icon scale-90">{c.icon}</span>
+                  <span className="bio-row-name">{c.name}</span>
+                </div>
+                <span className="bio-row-value truncate">{c.addr.substring(0, 10)}…{c.addr.slice(-4)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="bio-foot mt-4">
+            <div className="flex items-center gap-2">
+              <button onClick={() => onOpenWallet("eth")} className="bio-pill" title="Ethereum">{ethIcon}</button>
+              <button onClick={() => onOpenWallet("btc")} className="bio-pill" title="Bitcoin">{btcIcon}</button>
+              <button onClick={() => onOpenWallet("sol")} className="bio-pill" title="Solana">{solIcon}</button>
+            </div>
+            <span className="bio-foot-note">with love</span>
+          </div>
+        </section>
+      );
+
+    case "terminal":
+      return (
+        <section className="bio-section">
+          <div className="section-label">Terminal</div>
+          <div className="bio-terminal">
+            <InteractiveTerminal onExit={() => {}} />
+          </div>
+        </section>
+      );
+  }
 }
