@@ -38,3 +38,14 @@ AudioContext owner); do not put it behind a tab/conditional.
 - `styled-jsx` is NOT installed, so `<style jsx>` in components silently drops CSS. Use real CSS classes.
 - `components/ClientEffects.tsx` is unused by `page.tsx` (page imports what it needs directly).
 - `.gitignore` ignores `.env*`; no env file ships with the repo.
+
+## Git remotes & pushing
+Push over HTTPS, not SSH. The sandbox's paramiko-based SSH transport is capped at ~60 KB/s and
+stalls on large pushes (the music blobs are ~170 MB); HTTPS finishes in seconds.
+`origin` is `https://github.com/bluntedknives/my-bio.git` and a local credential helper serves
+the PAT from `/workspace/project/.env` (key `github`).
+
+## Running the dev server "forever"
+`/workspace/serve-my-bio.sh` is a restart-on-exit wrapper that runs `npm run dev -- --port 12000`
+and is relaunched by an idempotent guard appended to `~/.bashrc`. Logs: `/tmp/my-bio-server.log`.
+The server is reachable on port 12000 (work-1 host).
