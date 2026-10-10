@@ -218,7 +218,7 @@ export default function Page() {
               {WALLETS.map((c) => (
                 <div key={c.name} onClick={() => setSelectedCrypto(c.key)} className="bio-row group">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span style={{ color: c.color }} className="bio-row-icon scale-90">{c.icon}</span>
+                    <span className="bio-row-icon scale-90">{c.icon}</span>
                     <span className="bio-row-name">{c.name}</span>
                   </div>
                   <span className="bio-row-value truncate">{c.addr.substring(0, 10)}…{c.addr.slice(-4)}</span>

@@ -44,13 +44,13 @@ export default function CryptoModal({ selectedCrypto, onClose }: CryptoModalProp
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="relative w-full max-w-md rounded-3xl border border-[var(--glass-border)] bg-[rgba(12,12,14,0.92)] p-7 shadow-2xl backdrop-blur-2xl"
+          className="relative w-full max-w-sm rounded-2xl bg-[rgba(14,14,16,0.92)] p-6 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-2xl ring-1 ring-white/10"
         >
           <div className="mb-6 text-center">
             <h2 className="mb-2 text-xl font-bold uppercase tracking-widest text-white" style={{ color: data.color }}>
               Send {data.name}
             </h2>
-            <div className="mx-auto mb-6 aspect-square w-44 rounded-2xl border border-[var(--glass-border)] bg-white p-2.5">
+            <div className="mx-auto mb-6 aspect-square w-40 rounded-xl border border-white/10 bg-white p-2.5">
               <img 
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${data.address}`} 
                 alt="QR Code"
