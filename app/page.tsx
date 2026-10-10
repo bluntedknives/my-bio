@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import DiscordStatus from "../components/DiscordStatus";
 import MusicPlayer from "../components/MusicPlayer";
 import TypingEffect from "../components/TypingEffect";
@@ -16,15 +16,6 @@ import InteractiveTerminal from "../components/InteractiveTerminal";
 const DitheringBackground = dynamic(() => import("../components/DitheringBackground"), {
   ssr: false,
 });
-
-const discordIcon = (
-  <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="1.96 4.26 20.03 15.53">
-    <path
-      fill="currentColor"
-      d="M14.82 4.26a10.14 10.14 0 0 0-.53 1.1a14.66 14.66 0 0 0-4.58 0a10.14 10.14 0 0 0-.53-1.1a16 16 0 0 0-4.13 1.3a17.33 17.33 0 0 0-3 11.59a16.6 16.6 0 0 0 5.07 2.59A12.89 12.89 0 0 0 8.23 18a9.65 9.65 0 0 1-1.71-.83a3.39 3.39 0 0 0 .42-.33a11.66 11.66 0 0 0 10.12 0q.21.18.42.33a10.84 10.84 0 0 1-1.71.84a12.41 12.41 0 0 0 1.08 1.78a16.44 16.44 0 0 0 5.06-2.59a17.22 17.22 0 0 0-3-11.59a16.09 16.09 0 0 0-4.09-1.35zM8.68 14.81a1.94 1.94 0 0 1-1.8-2a1.93 1.93 0 0 1 1.8-2a1.93 1.93 0 0 1 1.8 2a1.93 1.93 0 0 1-1.8 2zm6.64 0a1.94 1.94 0 0 1-1.8-2a1.93 1.93 0 0 1 1.8-2a1.92 1.92 0 0 1 1.8 2a1.92 1.92 0 0 1-1.8 2z"
-    />
-  </svg>
-);
 
 const ethIcon = (
   <svg className="h-4 w-4" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
@@ -57,24 +48,20 @@ const emailIcon = (
 );
 
 const SOCIALS = [
-  { name: "TELEGRAM", val: "@wwersec", link: "https://t.me/wwersec", icon: telegramIcon },
-  { name: "EMAIL", val: "imited@conversations.im", link: "mailto:imited@conversations.im", icon: emailIcon },
+  { name: "Telegram", handle: "@wwersec", link: "https://t.me/wwersec", icon: telegramIcon },
+  { name: "Email", handle: "imited@conversations.im", link: "mailto:imited@conversations.im", icon: emailIcon },
 ];
 
 const WALLETS = [
-  { name: "ETH", addr: "0xF631fd9773740056cd116AA1364E894B448C5CF0", color: "#627EEA", icon: ethIcon },
-  { name: "BTC", addr: "bc1pnu4rw22fqz5v3y6tvmx9ject7pwfayc0mr28ecdn6w3sx6xdrjmsh5tw5k", color: "#F7931A", icon: btcIcon },
-  { name: "SOL", addr: "3mG96WjgDNaj1R8XkxifheoBsoPisVTKwDHFo4ErMeRy", color: "#14F195", icon: solIcon },
+  { name: "ETH", addr: "0xF631fd9773740056cd116AA1364E894B448C5CF0", color: "#627EEA", icon: ethIcon, key: "eth" as const },
+  { name: "BTC", addr: "bc1pnu4rw22fqz5v3y6tvmx9ject7pwfayc0mr28ecdn6w3sx6xdrjmsh5tw5k", color: "#F7931A", icon: btcIcon, key: "btc" as const },
+  { name: "SOL", addr: "3mG96WjgDNaj1R8XkxifheoBsoPisVTKwDHFo4ErMeRy", color: "#14F195", icon: solIcon, key: "sol" as const },
 ];
 
-const TABS = [
-  { id: "bio", label: "bio", num: "01" },
-  { id: "projects", label: "projects", num: "02" },
-  { id: "socials", label: "socials", num: "03" },
-  { id: "terminal", label: "terminal", num: "04" },
-] as const;
-
-type TabId = (typeof TABS)[number]["id"];
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0 },
+};
 
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
@@ -83,7 +70,7 @@ export default function Page() {
   const [discordName, setDiscordName] = useState("blunted");
   const [discordAvatar, setDiscordAvatar] = useState("/images/profile/87fa4deb047cfdbeaa6166a03806a9a4.jpg");
   const [selectedCrypto, setSelectedCrypto] = useState<"eth" | "btc" | "sol" | null>(null);
-  const [activeTab, setActiveTab] = useState<TabId>("bio");
+  const [showTerminal, setShowTerminal] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -95,11 +82,9 @@ export default function Page() {
 
     fetch("/api/discord-user", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data: { profileUrl?: string; username?: string; displayName?: string; avatarUrl?: string }) => {
+      .then((data: { username?: string; displayName?: string; avatarUrl?: string }) => {
         if (!active) return;
-        if (data.avatarUrl) {
-          setDiscordAvatar(data.avatarUrl);
-        }
+        if (data.avatarUrl) setDiscordAvatar(data.avatarUrl);
         const username = data.username?.trim() || data.displayName?.trim() || "";
         if (username) {
           setDiscordHandle(`@${username}`);
@@ -118,181 +103,161 @@ export default function Page() {
     document.title = discordHandle;
   }, [discordHandle, isClient]);
 
-  if (!isClient) return (
-    <div className="bio-root">
-      <div className="flex flex-col items-center justify-center gap-6">
-        <span className="h-8 w-8 animate-spin rounded-full border border-white/10 border-t-white/70" />
-        <div className="font-mono text-[0.65rem] uppercase tracking-[0.4em] text-white/40">
-          Initializing
+  if (!isClient) {
+    return (
+      <div className="bio-root">
+        <div className="flex flex-col items-center justify-center gap-5">
+          <span className="h-7 w-7 animate-spin rounded-full border border-white/10 border-t-white/70" />
+          <div className="font-mono text-[0.6rem] uppercase tracking-[0.4em] text-white/40">
+            Initializing
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="bio-root selection:bg-white selection:text-black">
       <DiscordStatus />
       <StatusPoller />
-      <TypingEffect activeTab={activeTab} />
+      <TypingEffect active={isUnlocked} />
       <Lockscreen onUnlock={() => setIsUnlocked(true)} />
 
-      <CryptoModal
-        selectedCrypto={selectedCrypto}
-        onClose={() => setSelectedCrypto(null)}
-      />
-
+      <CryptoModal selectedCrypto={selectedCrypto} onClose={() => setSelectedCrypto(null)} />
       <DitheringBackground />
 
       <div className={`bio-reveal ${isUnlocked ? "is-in" : ""}`}>
-        <main className="bio-shell">
+        <div className="bio-column">
           {/* Header */}
-          <header className="bio-header">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <img src={discordAvatar} alt="avatar" className="bio-avatar" />
-              <div className="min-w-0">
-                <div className="bio-kicker mb-1">hey there</div>
-                <h1 className="bio-name truncate">{discordName}</h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="tui-status-dot" />
-                  <span id="currentStatus" className="bio-handle uppercase tracking-wider">Connecting…</span>
-                </div>
+          <motion.header
+            className="bio-header"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <img src={discordAvatar} alt="avatar" className="bio-avatar" />
+            <div className="min-w-0">
+              <div className="bio-kicker">hey there</div>
+              <h1 className="bio-name truncate">{discordName}</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="tui-status-dot" />
+                <span id="currentStatus" className="bio-handle uppercase tracking-wider">Connecting…</span>
               </div>
             </div>
-            <ViewCounter />
-          </header>
+          </motion.header>
 
-          {/* Tabs */}
-          <nav className="bio-tabs">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`bio-tab ${activeTab === tab.id ? "active" : ""}`}
-              >
-                <span className="opacity-40 mr-1 font-mono">{tab.num}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+          {/* Bio */}
+          <motion.section
+            className="bio-section"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <p className="bio-bio">
+              <span id="typingText"></span>
+              <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Owned some com servers &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
+            </p>
+          </motion.section>
 
-          {/* Body */}
-          <div className="bio-body">
-            <AnimatePresence mode="wait">
-              {activeTab === "bio" && (
-                <motion.div
-                  key="bio"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  className="space-y-6"
-                >
-                  <section>
-                    <div className="section-label">System Bio</div>
-                    <p className="text-[0.82rem] leading-relaxed text-[var(--text-muted)]">
-                      <span id="typingText"></span>
-                      <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Owned some com servers &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
-                    </p>
-                  </section>
+          {/* Music — always mounted so playback never stops */}
+          <motion.section
+            className="bio-section"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <MusicPlayer />
+          </motion.section>
 
-                  <section>
-                    <MusicPlayer />
-                  </section>
-                </motion.div>
-              )}
+          {/* Projects */}
+          <motion.section
+            className="bio-section"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Projects />
+          </motion.section>
 
-              {activeTab === "projects" && (
-                <motion.div
-                  key="projects"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <Projects />
-                </motion.div>
-              )}
+          {/* Socials */}
+          <motion.section
+            className="bio-section"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="section-label">Socials</div>
+            <div className="grid grid-cols-1 gap-2">
+              {SOCIALS.map((s) => (
+                <a key={s.name} href={s.link} target="_blank" rel="noreferrer" className="bio-row group">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="bio-row-icon scale-90">{s.icon}</span>
+                    <span className="bio-row-name">{s.name}</span>
+                  </div>
+                  <span className="bio-row-value truncate">{s.handle}</span>
+                </a>
+              ))}
+            </div>
+          </motion.section>
 
-              {activeTab === "socials" && (
-                <motion.div
-                  key="socials"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  className="space-y-6"
-                >
-                  <section>
-                    <div className="section-label">Contact &amp; Socials</div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {SOCIALS.map((s) => (
-                        <a
-                          key={s.name}
-                          href={s.link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="bio-row group"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <div className="bio-row-icon scale-90">{s.icon}</div>
-                            <span className="bio-row-name">{s.name}</span>
-                          </div>
-                          <span className="bio-row-value">{s.val}</span>
-                        </a>
-                      ))}
-                    </div>
-                  </section>
+          {/* Wallets */}
+          <motion.section
+            className="bio-section"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="section-label">Wallets</div>
+            <div className="grid grid-cols-1 gap-2">
+              {WALLETS.map((c) => (
+                <div key={c.name} onClick={() => setSelectedCrypto(c.key)} className="bio-row group">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span style={{ color: c.color }} className="bio-row-icon scale-90">{c.icon}</span>
+                    <span className="bio-row-name">{c.name}</span>
+                  </div>
+                  <span className="bio-row-value truncate">{c.addr.substring(0, 10)}…{c.addr.slice(-4)}</span>
+                </div>
+              ))}
+            </div>
+          </motion.section>
 
-                  <section>
-                    <div className="section-label">Wallet Addresses</div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {WALLETS.map((c) => (
-                        <div
-                          key={c.name}
-                          onClick={() => {
-                            navigator.clipboard.writeText(c.addr);
-                          }}
-                          className="bio-row group"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <div style={{ color: c.color }} className="bio-row-icon scale-90">{c.icon}</div>
-                            <span className="bio-row-name">{c.name}</span>
-                          </div>
-                          <span className="bio-row-value">{c.addr.substring(0, 12)}…</span>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                </motion.div>
-              )}
-
-              {activeTab === "terminal" && (
-                <motion.div
-                  key="terminal"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="h-[340px]"
-                >
-                  <InteractiveTerminal onExit={() => setActiveTab("bio")} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Terminal toggle */}
+          <motion.section
+            className="bio-section"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, delay: 0.36, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <button
+              className="bio-control w-full"
+              onClick={() => setShowTerminal((v) => !v)}
+            >
+              <span className="font-mono text-[0.7rem]">{showTerminal ? "Close terminal" : "Open terminal"}</span>
+            </button>
+            {showTerminal && (
+              <div className="bio-terminal mt-3">
+                <InteractiveTerminal onExit={() => setShowTerminal(false)} />
+              </div>
+            )}
+          </motion.section>
 
           {/* Footer */}
-          <footer className="bio-footer">
+          <footer className="bio-foot">
             <div className="flex items-center gap-2">
               <button onClick={() => setSelectedCrypto("eth")} className="bio-pill" title="Ethereum">{ethIcon}</button>
               <button onClick={() => setSelectedCrypto("btc")} className="bio-pill" title="Bitcoin">{btcIcon}</button>
               <button onClick={() => setSelectedCrypto("sol")} className="bio-pill" title="Solana">{solIcon}</button>
             </div>
-            <div className="font-mono text-[0.6rem] tracking-[0.2em] text-[var(--text-faint)] hidden sm:block">
-              EST. MMXXV
-            </div>
+            <ViewCounter />
           </footer>
-        </main>
+        </div>
       </div>
     </div>
   );

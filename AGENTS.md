@@ -27,9 +27,12 @@ listed in `allowedDevOrigins` in `next.config.js`, or Next blocks cross-origin d
 - `app/globals.css` — Tailwind v4 `@import` + custom `.console-*`, `.tui-*`, `.void-*` classes.
 
 ## Design reference
-Redesign targets the aesthetic of cosmin.gg: centered column, Geist-like sans body, glass cards
-(`bg-white/[0.03] border-white/[0.06] rounded-2xl backdrop-blur`), muted `/45-/60` opacity text,
-pill buttons, hairline gradient accents. Music player + visualizer must be preserved and restyled.
+Redesign targets the cosmin.gg / guns.lol "scroll bio" look: a single centered column
+(~440px) that scrolls the whole page — avatar header, typed bio, always-mounted music
+player, then projects / socials / wallets / terminal stacked as sections, with a footer
+(pills + view counter). Muted `/55` opacity text, hairline borders, sans body + mono
+details. The music player MUST stay mounted at all times (it is the app's single
+AudioContext owner); do not put it behind a tab/conditional.
 
 ## Gotchas
 - `styled-jsx` is NOT installed, so `<style jsx>` in components silently drops CSS. Use real CSS classes.
