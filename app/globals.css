@@ -28,13 +28,17 @@
   --glass-border-strong: rgba(255, 255, 255, 0.14);
   --text-muted: rgba(255, 255, 255, 0.55);
   --text-faint: rgba(255, 255, 255, 0.34);
-  --btn-text: #adadad;
-  --btn-bg: rgba(255, 255, 255, 0.03);
-  --btn-bg-hover: rgba(255, 255, 255, 0.065);
-  --ring: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --btn-text: color-mix(in srgb, var(--accent) 28%, #adadad);
   --sheen: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   --lift: 0 2px 4px -1px rgba(0, 0, 0, 0.24), 0 4px 8px -2px rgba(0, 0, 0, 0.22),
     0 8px 16px -4px rgba(0, 0, 0, 0.2);
+
+  /* Live accent, driven by the current track's cover art */
+  --accent: #ffffff;
+  --accent-border: color-mix(in srgb, var(--accent) 26%, rgba(255, 255, 255, 0.06));
+  --accent-bg: color-mix(in srgb, var(--accent) 8%, rgba(255, 255, 255, 0.02));
+  --accent-bg-hover: color-mix(in srgb, var(--accent) 14%, rgba(255, 255, 255, 0.04));
+  --accent-text: color-mix(in srgb, var(--accent) 75%, #ffffff);
 }
 
 * {
@@ -77,31 +81,25 @@ body {
   padding: 3rem 1.25rem 4rem;
 }
 
-/* Subtle full-screen accent wash that shifts with the current track */
+/* Subtle full-screen accent wash that shifts with the current track's art */
 .bio-root::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   background:
     radial-gradient(
-      60% 55% at 50% -8%,
-      color-mix(in srgb, var(--accent, #fff) 14%, transparent),
+      62% 55% at 50% -8%,
+      color-mix(in srgb, var(--accent) 16%, transparent),
       transparent 60%
     ),
     radial-gradient(
       55% 45% at 85% 108%,
-      color-mix(in srgb, var(--accent, #fff) 9%, transparent),
+      color-mix(in srgb, var(--accent) 10%, transparent),
       transparent 65%
     );
-  opacity: 0;
-  transition: opacity 0.8s ease, background 0.8s ease;
-}
-
-/* Only tint the background while audio is playing */
-.audio-playing .bio-root::before {
-  opacity: 1;
+  transition: background 0.8s ease;
 }
 
 .bio-reveal {
@@ -144,23 +142,14 @@ body {
   position: relative;
   padding: 3px;
   border-radius: 50%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(255, 255, 255, 0.04)
+  background: conic-gradient(
+    from 180deg,
+    color-mix(in srgb, var(--accent) 75%, transparent),
+    rgba(255, 255, 255, 0.05),
+    color-mix(in srgb, var(--accent) 50%, transparent)
   );
   margin-bottom: 0.3rem;
   transition: background 0.6s ease;
-}
-
-/* Accent ring lights up only while audio is playing */
-.audio-playing .bio-avatar-wrap {
-  background: conic-gradient(
-    from 180deg,
-    color-mix(in srgb, var(--accent, #fff) 75%, transparent),
-    rgba(255, 255, 255, 0.05),
-    color-mix(in srgb, var(--accent, #fff) 50%, transparent)
-  );
 }
 
 .bio-avatar {
@@ -264,13 +253,14 @@ body {
   z-index: 40;
   padding: 0.3rem 0.6rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: var(--accent-bg);
+  box-shadow: inset 0 0 0 1px var(--accent-border);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   opacity: 0;
   transform: translateY(-6px);
-  transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+  transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s,
+    background 0.6s ease, box-shadow 0.6s ease;
   pointer-events: none;
 }
 
@@ -298,7 +288,7 @@ body {
   content: "";
   width: 0.85rem;
   height: 1px;
-  background: color-mix(in srgb, var(--accent, #fff) 45%, rgba(255, 255, 255, 0.2));
+  background: color-mix(in srgb, var(--accent) 45%, rgba(255, 255, 255, 0.2));
   transition: background 0.6s ease;
 }
 
@@ -313,25 +303,19 @@ body {
   padding: 0 0.9rem;
   border: none;
   border-radius: 8px;
-  background: var(--btn-bg);
-  box-shadow: var(--lift), var(--ring), var(--sheen);
+  background: var(--accent-bg);
+  box-shadow: var(--lift), inset 0 0 0 1px var(--accent-border), var(--sheen);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: var(--btn-text);
   cursor: pointer;
-  transition: background 0.18s ease, box-shadow 0.18s ease,
+  transition: background 0.5s ease, box-shadow 0.5s ease,
     transform 0.18s ease;
 }
 
 .bio-row:hover {
-  background: var(--btn-bg-hover);
+  background: var(--accent-bg-hover);
   transform: translateY(0.5px);
-}
-
-.audio-playing .bio-row:hover {
-  box-shadow: var(--lift),
-    inset 0 0 0 1px color-mix(in srgb, var(--accent, #fff) 30%, rgba(255, 255, 255, 0.08)),
-    var(--sheen);
 }
 
 .bio-row-icon {
@@ -374,17 +358,18 @@ body {
   height: 34px;
   border: none;
   border-radius: 8px;
-  background: var(--btn-bg);
-  box-shadow: var(--lift), var(--ring), var(--sheen);
+  background: var(--accent-bg);
+  box-shadow: var(--lift), inset 0 0 0 1px var(--accent-border), var(--sheen);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: var(--btn-text);
-  transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+  transition: color 0.18s ease, background 0.5s ease, box-shadow 0.5s ease,
+    transform 0.18s ease;
 }
 
 .bio-pill:hover {
   color: #ffffff;
-  background: var(--btn-bg-hover);
+  background: var(--accent-bg-hover);
   transform: translateY(0.5px);
 }
 
@@ -394,23 +379,16 @@ body {
   position: relative;
   border: none;
   border-radius: 12px;
-  background: var(--btn-bg);
-  box-shadow: var(--lift), inset 0 0 0 1px rgba(255, 255, 255, 0.08), var(--sheen);
+  background: var(--accent-bg);
+  box-shadow: var(--lift), inset 0 0 0 1px var(--accent-border), var(--sheen);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 0.85rem 0.9rem 0.9rem;
   overflow: hidden;
-  transition: box-shadow 0.6s ease;
+  transition: background 0.6s ease, box-shadow 0.6s ease;
 }
 
-/* Accent glow only while audio is actually playing */
-.audio-playing .bio-player {
-  box-shadow: var(--lift),
-    inset 0 0 0 1px color-mix(in srgb, var(--accent, #fff) 26%, rgba(255, 255, 255, 0.08)),
-    0 0 34px -14px color-mix(in srgb, var(--accent, #fff) 55%, transparent),
-    var(--sheen);
-}
-
+/* Faint accent sheen inside the panel (no outer glow) */
 .bio-player::before {
   content: "";
   position: absolute;
@@ -418,16 +396,12 @@ body {
   height: 42%;
   background: radial-gradient(
     120% 100% at 50% 0%,
-    color-mix(in srgb, var(--accent, #fff) 22%, transparent),
+    color-mix(in srgb, var(--accent) 16%, transparent),
     transparent 70%
   );
-  opacity: 0;
+  opacity: 0.9;
   pointer-events: none;
-  transition: opacity 0.6s ease, background 0.6s ease;
-}
-
-.audio-playing .bio-player::before {
-  opacity: 0.75;
+  transition: background 0.6s ease;
 }
 
 .bio-player-banner {
@@ -444,14 +418,9 @@ body {
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  transition: box-shadow 0.6s ease;
-}
-
-.audio-playing .bio-track-art {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 0 1px color-mix(in srgb, var(--accent, #fff) 35%, transparent),
-    0 6px 18px -8px color-mix(in srgb, var(--accent, #fff) 60%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: box-shadow 0.6s ease;
 }
 
 .bio-eq {
@@ -466,7 +435,7 @@ body {
   width: 2px;
   height: 4px;
   border-radius: 2px;
-  background: var(--accent, #fff);
+  background: var(--accent);
   opacity: 0.9;
 }
 
@@ -514,7 +483,7 @@ body {
 .bio-track-artist {
   font-size: 0.65rem;
   letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--accent, #fff) 70%, rgba(255, 255, 255, 0.5));
+  color: color-mix(in srgb, var(--accent) 70%, rgba(255, 255, 255, 0.5));
   margin-top: 0.18rem;
   transition: color 0.6s ease;
 }
@@ -534,8 +503,8 @@ body {
   border-radius: 999px;
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--accent, #fff) 55%, rgba(255, 255, 255, 0.5)),
-    var(--accent, #fff)
+    color-mix(in srgb, var(--accent) 55%, rgba(255, 255, 255, 0.5)),
+    var(--accent)
   );
   transition: width 0.25s linear, background 0.6s ease;
 }
@@ -549,41 +518,34 @@ body {
   padding: 0 0.85rem;
   border: none;
   border-radius: 8px;
-  background: var(--btn-bg);
-  box-shadow: var(--lift), var(--ring), var(--sheen);
+  background: var(--accent-bg);
+  box-shadow: var(--lift), inset 0 0 0 1px var(--accent-border), var(--sheen);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: var(--btn-text);
   font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.03em;
-  transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+  transition: color 0.18s ease, background 0.5s ease, box-shadow 0.5s ease,
+    transform 0.18s ease;
 }
 
 .bio-control:hover {
   color: #ffffff;
-  background: var(--btn-bg-hover);
+  background: var(--accent-bg-hover);
   transform: translateY(0.5px);
 }
 
+/* Primary action: accent-tinted, no white border/glow */
 .bio-control-primary {
-  background: rgba(255, 255, 255, 0.92);
-  color: #050506;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 4px 12px -4px rgba(0, 0, 0, 0.4);
-  transition: background 0.6s ease, color 0.4s ease, box-shadow 0.4s ease;
-}
-
-.audio-playing .bio-control-primary {
-  background: color-mix(in srgb, var(--accent, #fff) 88%, #ffffff);
-  color: #050506;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4),
-    0 6px 18px -8px color-mix(in srgb, var(--accent, #fff) 80%, transparent);
+  background: var(--accent-bg-hover);
+  color: #ffffff;
+  box-shadow: var(--lift), inset 0 0 0 1px var(--accent-border), var(--sheen);
 }
 
 .bio-control-primary:hover {
-  background: #ffffff;
-  color: #050506;
+  background: color-mix(in srgb, var(--accent) 26%, rgba(255, 255, 255, 0.06));
+  color: #ffffff;
 }
 
 /* ---------- Projects ---------- */
@@ -592,16 +554,16 @@ body {
   display: block;
   border: none;
   border-radius: 8px;
-  background: var(--btn-bg);
-  box-shadow: var(--lift), var(--ring), var(--sheen);
+  background: var(--accent-bg);
+  box-shadow: var(--lift), inset 0 0 0 1px var(--accent-border), var(--sheen);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 0.8rem 1rem;
-  transition: background 0.18s ease, transform 0.18s ease;
+  transition: background 0.5s ease, box-shadow 0.5s ease, transform 0.18s ease;
 }
 
 .bio-project:hover {
-  background: var(--btn-bg-hover);
+  background: var(--accent-bg-hover);
   transform: translateY(0.5px);
 }
 
@@ -612,11 +574,12 @@ body {
   border: none;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.6);
-  box-shadow: var(--lift), var(--ring), var(--sheen);
+  box-shadow: var(--lift), inset 0 0 0 1px var(--accent-border), var(--sheen);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 0.85rem 1rem;
   overflow: hidden;
+  transition: box-shadow 0.6s ease;
 }
 
 /* ---------- Animations (typing) ---------- */

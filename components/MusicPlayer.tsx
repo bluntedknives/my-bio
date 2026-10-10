@@ -19,9 +19,10 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
-// Turn an averaged RGB sample into a vivid, readable accent (HSV with
-// floors on saturation/value so near-black/near-grey covers still pop).
-const vividColor = (r: number, g: number, b: number) => {
+// Convert a sampled RGB color into a display-ready accent while preserving
+// its true hue. Saturation/value are only nudged into a readable band, so an
+// art with no red never yields red.
+const toDisplayColor = (r: number, g: number, b: number) => {
   const rn = r / 255;
   const gn = g / 255;
   const bn = b / 255;
@@ -40,8 +41,8 @@ const vividColor = (r: number, g: number, b: number) => {
   }
 
   let s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-  s = Math.min(1, Math.max(0.55, s * 1.1));
-  const v = Math.min(1, Math.max(0.62, max * 1.05));
+  s = Math.min(0.95, Math.max(0.45, s));
+  const v = Math.min(0.98, Math.max(0.66, max));
 
   return hsvToHex(h, s, v);
 };
@@ -98,11 +99,6 @@ export default function MusicPlayer() {
     document.documentElement.style.setProperty("--accent", accent);
   }, [accent]);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("audio-playing", isPlaying);
-    return () => document.documentElement.classList.remove("audio-playing");
-  }, [isPlaying]);
-
   const currentTrack = tracks[currentIndex];
 
   useEffect(() => {
@@ -115,7 +111,7 @@ export default function MusicPlayer() {
     img.onload = () => {
       if (cancelled) return;
       try {
-        const size = 24;
+        const size = 60;
         const canvas = document.createElement("canvas");
         canvas.width = size;
         canvas.height = size;
@@ -124,19 +120,56 @@ export default function MusicPlayer() {
         ctx.drawImage(img, 0, 0, size, size);
         const { data } = ctx.getImageData(0, 0, size, size);
 
-        let r = 0;
-        let g = 0;
-        let b = 0;
-        let count = 0;
+        // Bucket colors and pick the most common *vivid* one so the accent
+        // faithfully reflects the album art (average RGB washes hue out).
+        const buckets = new Map<string, { n: number; r: number; g: number; b: number; score: number }>();
+        let bestSat = 0;
+        let mostSaturated: { r: number; g: number; b: number } | null = null;
         for (let i = 0; i < data.length; i += 4) {
-          if (data[i + 3] < 128) continue;
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
-          count += 1;
+          if (data[i + 3] < 200) continue;
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const mx = Math.max(r, g, b);
+          const mn = Math.min(r, g, b);
+          const sat = mx === 0 ? 0 : (mx - mn) / mx;
+
+          if (sat > bestSat && (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.15) {
+            bestSat = sat;
+            mostSaturated = { r, g, b };
+          }
+
+          const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+          if (sat < 0.18 || lum < 0.12 || lum > 0.95) continue;
+
+          const key = `${r >> 5}-${g >> 5}-${b >> 5}`;
+          const bucket = buckets.get(key) || { n: 0, r: 0, g: 0, b: 0, score: 0 };
+          bucket.n += 1;
+          bucket.r += r;
+          bucket.g += g;
+          bucket.b += b;
+          bucket.score += sat * (1 - Math.abs(lum - 0.55) * 0.8);
+          buckets.set(key, bucket);
         }
-        if (!count) return;
-        setAccent(vividColor(r / count, g / count, b / count));
+
+        let best: { r: number; g: number; b: number } | null = null;
+        let bestScore = 0;
+        for (const bucket of buckets.values()) {
+          const score = bucket.score;
+          if (score > bestScore) {
+            bestScore = score;
+            best = { r: bucket.r / bucket.n, g: bucket.g / bucket.n, b: bucket.b / bucket.n };
+          }
+        }
+
+        if (!best && mostSaturated && bestSat >= 0.12) best = mostSaturated;
+
+        if (best) {
+          setAccent(toDisplayColor(best.r, best.g, best.b));
+        } else {
+          // Genuinely monochrome art: stay neutral rather than invent a hue.
+          setAccent("#8f8f8f");
+        }
       } catch {}
     };
     img.src = image;
