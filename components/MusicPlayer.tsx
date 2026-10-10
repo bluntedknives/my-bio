@@ -71,6 +71,24 @@ const hsvToHex = (h: number, s: number, v: number) => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
+// Darken an accent hex toward transparent black for the gradient tail
+const colorMixFade = (hex: string, amount: number) => {
+  const clean = hex.replace(/^#/, "");
+  const full =
+    clean.length === 3
+      ? clean
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : clean;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  const f = (v: number) => (Number.isFinite(v) ? v : 128) * amount;
+  return `#${toHex(f(r))}${toHex(f(g))}${toHex(f(b))}`;
+};
+
 export default function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -195,7 +213,7 @@ export default function MusicPlayer() {
     try {
       const context = new AudioContextClass();
       const analyser = context.createAnalyser();
-      analyser.fftSize = 64;
+      analyser.fftSize = 128;
       analyser.smoothingTimeConstant = 0.85;
 
       const source = context.createMediaElementSource(audio);
@@ -373,8 +391,8 @@ export default function MusicPlayer() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const barCount = 12;
-    const barGap = 4;
+    const barCount = 56;
+    const barGap = 1.5;
 
     if (levelsRef.current.length !== barCount) {
       levelsRef.current = Array.from({ length: barCount }, () => 0);
@@ -444,21 +462,31 @@ export default function MusicPlayer() {
       );
 
       // Bars follow the current track's extracted accent color
-      ctx.fillStyle = accentRef.current || "#ffffff";
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, accentRef.current || "#ffffff");
+      grad.addColorStop(1, colorMixFade(accentRef.current || "#ffffff", 0.35));
+      ctx.fillStyle = grad;
 
       const totalGap = barGap * (barCount - 1);
-      const barWidth = Math.max(2, (width - totalGap) / barCount);
+      const barWidth = Math.max(1, (width - totalGap) / barCount);
+      const bins = dataArray ? dataArray.length : 0;
 
       for (let i = 0; i < barCount; i += 1) {
-        const active = isPlayingRef.current && dataArray;
-        const rawValue = dataArray ? dataArray[i * 2] || 0 : 0;
-        const normalized = active ? rawValue / 255 : 0;
-        const target = Math.min(1, normalized * 1.5);
-        const smoothed = (levelsRef.current[i] ?? 0) * 0.8 + target * 0.2;
+        const active = isPlayingRef.current && dataArray && bins > 0;
+        // Spread the 32 bars across the available frequency bins
+        const binIndex = bins > 0 ? Math.min(bins - 1, Math.floor((i / barCount) * bins)) : 0;
+        const rawValue = active ? dataArray![binIndex] || 0 : 0;
+        const normalized = rawValue / 255;
+        // Boost and curve so quiet detail still moves visibly
+        const shaped = Math.pow(normalized, 0.75);
+        const target = Math.min(1, shaped * 1.35);
+        // Snappier attack, slower release -> lively but not jittery
+        const prev = levelsRef.current[i] ?? 0;
+        const smoothed = target > prev ? prev + (target - prev) * 0.5 : prev + (target - prev) * 0.16;
         levelsRef.current[i] = smoothed;
-        const barHeight = Math.max(2, smoothed * height);
+        const barHeight = Math.max(2, smoothed * (height - 6));
         const x = i * (barWidth + barGap);
-        const y = (height - barHeight) / 2; // Center bars vertically
+        const y = height - barHeight;
         ctx.fillRect(x, y, barWidth, barHeight);
       }
 

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import DiscordStatus from "../components/DiscordStatus";
+import Clock from "../components/Clock";
 import MusicPlayer from "../components/MusicPlayer";
 import TypingEffect from "../components/TypingEffect";
 import Lockscreen from "../components/Lockscreen";
@@ -47,7 +48,14 @@ const emailIcon = (
   </svg>
 );
 
+const discordIcon = (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.211.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+  </svg>
+);
+
 const SOCIALS = [
+  { name: "Discord", handle: "@whosbleedingg", link: "https://discord.com/users/1521196393606156578", icon: discordIcon },
   { name: "Telegram", handle: "@wwersec", link: "https://t.me/wwersec", icon: telegramIcon },
   { name: "Email", handle: "imited@conversations.im", link: "mailto:imited@conversations.im", icon: emailIcon },
 ];
@@ -66,7 +74,7 @@ const fadeUp = {
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [discordHandle, setDiscordHandle] = useState("@blunted");
+  const [discordHandle, setDiscordHandle] = useState("@whosbleedingg");
   const [discordName, setDiscordName] = useState("blunted");
   const [discordAvatar, setDiscordAvatar] = useState("/images/profile/87fa4deb047cfdbeaa6166a03806a9a4.jpg");
   const [selectedCrypto, setSelectedCrypto] = useState<"eth" | "btc" | "sol" | null>(null);
@@ -136,14 +144,27 @@ export default function Page() {
             animate={isUnlocked ? "show" : "hidden"}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="bio-avatar-wrap">
-              <img src={discordAvatar} alt="avatar" className="bio-avatar" />
-            </div>
-            <div className="bio-kicker">hey there</div>
-            <h1 className="bio-name">{discordName}</h1>
-            <div className="bio-status">
-              <span className="tui-status-dot" />
-              <span id="currentStatus" className="bio-handle">Connecting…</span>
+            <div className="bio-hero-head">
+              <div className="bio-avatar-wrap">
+                <img src={discordAvatar} alt="avatar" className="bio-avatar" />
+              </div>
+              <div className="bio-id">
+                <div className="bio-kicker">
+                  hey there
+                  <span className="bio-kicker-sep">·</span>
+                  <span className="bio-kicker-age">19 yo</span>
+                </div>
+                <h1 className="bio-name">{discordName}</h1>
+                <div className="bio-status">
+                  <img src="/images/ui/custom-icon.png" alt="" className="bio-status-icon" />
+                  <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
+                  <span className="bio-status-dot-wrap">
+                    <span className="tui-status-dot" />
+                    <span className="bio-status-label">Connecting…</span>
+                  </span>
+                </div>
+              </div>
+              <Clock />
             </div>
           </motion.header>
 
@@ -157,7 +178,7 @@ export default function Page() {
           >
             <p className="bio-typing">
               <span id="typingText"></span>
-              <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Owned some com servers &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
+              <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
             </p>
           </motion.section>
 
@@ -257,6 +278,20 @@ export default function Page() {
             </div>
             <span className="bio-foot-note">with love</span>
           </footer>
+
+          {/* Scroll cue */}
+          <motion.div
+            className="bio-scroll-cue"
+            variants={fadeUp}
+            initial="hidden"
+            animate={isUnlocked ? "show" : "hidden"}
+            transition={{ duration: 0.6, delay: 0.42, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="bio-scroll-text">scroll</span>
+            <span className="bio-scroll-track">
+              <span className="bio-scroll-dot" />
+            </span>
+          </motion.div>
         </div>
       </div>
 
