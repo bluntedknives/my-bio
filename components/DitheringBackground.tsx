@@ -2,7 +2,7 @@
 
 import type { PaperShaderElement } from "@paper-design/shaders";
 import { Dithering } from "@paper-design/shaders-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ACCENT_EVENT, AUDIO_REACTIVE_EVENT } from "../lib/bio-events";
 
@@ -26,47 +26,31 @@ const hexToRgb = (hex: string): [number, number, number] => {
           .map((c) => c + c)
           .join("")
       : clean;
-  const r = parseInt(full.slice(0, 2), 16) / 255;
-  const g = parseInt(full.slice(2, 4), 16) / 255;
-  const b = parseInt(full.slice(4, 6), 16) / 255;
-  return [
-    Number.isFinite(r) ? r : 0.5,
-    Number.isFinite(g) ? g : 0.5,
-    Number.isFinite(b) ? b : 0.5,
-  ];
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  if (![r, g, b].every(Number.isFinite)) return [136, 136, 136];
+  return [r, g, b];
 };
+
+const toHex = ([r, g, b]: [number, number, number]) =>
+  "#" + [r, g, b].map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0")).join("");
 
 export default function DitheringBackground() {
   const shaderRef = useRef<PaperShaderElement | null>(null);
 
-  useEffect(() => {
-    // Apply an accent color to the shader, retrying until the mount is ready.
-    const applyAccent = (accent: string) => {
-      if (!accent) return;
-      const [r, g, b] = hexToRgb(accent);
-      const set = () => {
-        const mount = shaderRef.current?.paperShaderMount;
-        if (!mount) return false;
-        mount.setUniforms({
-          u_colorFront: [r, g, b, 1],
-          // Near-black but tinted, so the whole field shifts subtly with the art.
-          u_colorBack: [r * 0.12, g * 0.12, b * 0.12, 1],
-        });
-        return true;
-      };
-      if (set()) return;
-      let tries = 0;
-      const tick = () => {
-        if (set() || ++tries > 60) return;
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
+  // The shader colors are driven through props: <Dithering> re-applies its prop
+  // uniforms on every render, which would clobber any imperative setUniforms.
+  const [accent, setAccent] = useState("#888888");
 
-    // Recolor the actual shader (not an overlay) whenever the track changes.
+  const rgb = hexToRgb(accent);
+  // Tinted near-black so the whole field shifts with the cover art.
+  const backHex = toHex([rgb[0] * 0.12, rgb[1] * 0.12, rgb[2] * 0.12]);
+
+  useEffect(() => {
     const handleAccent = (event: Event) => {
-      const accent = (event as CustomEvent<{ accent: string }>).detail?.accent;
-      applyAccent(accent);
+      const next = (event as CustomEvent<{ accent: string }>).detail?.accent;
+      if (next) setAccent(next);
     };
 
     const handleAudioReactive = (event: Event) => {
@@ -93,11 +77,11 @@ export default function DitheringBackground() {
     document.addEventListener(AUDIO_REACTIVE_EVENT, handleAudioReactive);
 
     // On mount, adopt whatever accent is already live so the background is
-    // tinted from the first frame instead of starting neutral/white.
+    // tinted from the first frame instead of starting neutral/gray.
     const initial = getComputedStyle(document.documentElement)
       .getPropertyValue("--accent")
       .trim();
-    if (initial) applyAccent(initial);
+    if (initial) setAccent(initial);
 
     return () => {
       document.removeEventListener(ACCENT_EVENT, handleAccent);
@@ -114,8 +98,8 @@ export default function DitheringBackground() {
         ref={shaderRef}
         className="h-full w-full"
         style={{ width: "100%", height: "100%" }}
-        colorBack="#000000"
-        colorFront="#888888"
+        colorBack={backHex}
+        colorFront={accent}
         shape="warp"
         type="4x4"
         pxSize={2.5}
@@ -128,8 +112,8 @@ export default function DitheringBackground() {
         minPixelRatio={1}
         maxPixelCount={1500000}
       />
-      {/* Neutral vignette only — no tinted overlay pretending to be the background */}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.75))]" />
+      {/* Scrim: keeps the moving dither field from washing out foreground text. */}
+      <div className="bio-scrim absolute inset-0" />
     </div>
   );
 }
