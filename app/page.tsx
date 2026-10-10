@@ -142,29 +142,13 @@ export default function Page() {
             animate={isUnlocked ? "show" : "hidden"}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="bio-hero-head">
-              <div className="bio-id">
-                <div className="bio-kicker">
-                  wazup
-                  <span className="bio-kicker-sep">·</span>
-                  <span className="bio-kicker-age">owner</span>
-                </div>
-                <h1 className="bio-name">{discordName}</h1>
-              </div>
-              <div className="bio-hero-aside">
-                <Clock />
-                <div className="bio-status">
-                  <span className="bio-status-pill">
-                    <img src="/images/ui/custom-icon.png" alt="" className="bio-status-icon" />
-                    <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
-                  </span>
-                  <span className="bio-status-dot-wrap">
-                    <span className="tui-status-dot" />
-                    <span className="bio-status-label">Connecting…</span>
-                  </span>
-                </div>
-              </div>
+            <div className="bio-kicker">
+              wazup
+              <span className="bio-kicker-sep">·</span>
+              <span className="bio-kicker-age">owner</span>
             </div>
+            <h1 className="bio-name">{discordName}</h1>
+            <Clock />
           </motion.header>
 
           {/* Bio */}
