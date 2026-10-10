@@ -19,6 +19,55 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
+// Turn an averaged RGB sample into a vivid, readable accent (HSV with
+// floors on saturation/value so near-black/near-grey covers still pop).
+const vividColor = (r: number, g: number, b: number) => {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+  const d = max - min;
+  let h = 0;
+
+  if (d !== 0) {
+    if (max === rn) h = ((gn - bn) / d) % 6;
+    else if (max === gn) h = (bn - rn) / d + 2;
+    else h = (rn - gn) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+
+  let s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  s = Math.min(1, Math.max(0.55, s * 1.1));
+  const v = Math.min(1, Math.max(0.62, max * 1.05));
+
+  return hsvToHex(h, s, v);
+};
+
+const hsvToHex = (h: number, s: number, v: number) => {
+  const c = v * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = v - c;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+
+  const toHex = (n: number) =>
+    Math.round((n + m) * 255)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
 export default function MusicPlayer() {
   const AUDIO_REACTIVE_EVENT = "bio:audio-reactive";
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -36,11 +85,66 @@ export default function MusicPlayer() {
   const pulseRef = useRef(0);
   const progressFillRef = useRef<HTMLDivElement | null>(null);
   const currentTimeRef = useRef<HTMLSpanElement | null>(null);
+  const accentRef = useRef("#ffffff");
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [unlockRequested, setUnlockRequested] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [accent, setAccent] = useState("#ffffff");
+
+  useEffect(() => {
+    accentRef.current = accent;
+    document.documentElement.style.setProperty("--accent", accent);
+  }, [accent]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("audio-playing", isPlaying);
+    return () => document.documentElement.classList.remove("audio-playing");
+  }, [isPlaying]);
+
+  const currentTrack = tracks[currentIndex];
+
+  useEffect(() => {
+    const image = currentTrack?.image;
+    if (!image) return;
+    let cancelled = false;
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (cancelled) return;
+      try {
+        const size = 24;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, size, size);
+        const { data } = ctx.getImageData(0, 0, size, size);
+
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        let count = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 128) continue;
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+          count += 1;
+        }
+        if (!count) return;
+        setAccent(vividColor(r / count, g / count, b / count));
+      } catch {}
+    };
+    img.src = image;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentTrack?.image]);
 
   const ensureAudioGraph = () => {
     const audio = audioRef.current;
@@ -130,8 +234,6 @@ export default function MusicPlayer() {
     setIsPlaying(true);
     setUnlockRequested(false);
   }, [unlockRequested, tracks.length]);
-
-  const currentTrack = tracks[currentIndex];
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -304,13 +406,11 @@ export default function MusicPlayer() {
         }),
       );
 
-      // Get theme accent color
-      const themeAccent = getComputedStyle(document.documentElement).getPropertyValue('--theme-accent').trim() || '#ffffff';
+      // Bars follow the current track's extracted accent color
+      ctx.fillStyle = accentRef.current || "#ffffff";
 
       const totalGap = barGap * (barCount - 1);
       const barWidth = Math.max(2, (width - totalGap) / barCount);
-      
-      ctx.fillStyle = themeAccent;
 
       for (let i = 0; i < barCount; i += 1) {
         const active = isPlayingRef.current && dataArray;
@@ -338,14 +438,8 @@ export default function MusicPlayer() {
   }, []);
 
   return (
-    <div className="bio-player">
-      <div className="section-label">Now Playing</div>
-
-      <div className="bio-visualizer mb-4">
-        <canvas ref={canvasRef} className="h-full w-full" />
-      </div>
-
-      <div className="flex items-center gap-3 mb-4">
+    <div className="bio-player" style={{ "--accent": accent } as React.CSSProperties}>
+      <div className="bio-player-banner">
         {currentTrack?.image ? (
           <img src={currentTrack.image} alt="" className="bio-track-art" />
         ) : (
@@ -353,30 +447,56 @@ export default function MusicPlayer() {
         )}
         <div className="min-w-0 flex-1">
           <div className="bio-track-title truncate">{currentTrack?.title || "No media"}</div>
-          <div className="bio-track-artist truncate">{currentTrack?.artist || currentTrack?.album || "Unknown source"}</div>
+          <div className="bio-track-artist truncate">
+            {currentTrack?.artist || currentTrack?.album || "Unknown source"}
+          </div>
         </div>
+        <span className={`bio-eq ${isPlaying ? "is-on" : ""}`} aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
       </div>
 
-      <div className="mb-4">
-        <div className="bio-progress mb-2" onClick={handleSeek}>
-          <div
-            ref={progressFillRef}
-            className="bio-progress-fill"
-            style={{ width: "0%" }}
-          />
-        </div>
-        <div className="flex justify-between font-mono text-[0.62rem] text-[var(--text-faint)]">
-          <span ref={currentTimeRef}>0:00</span>
-          <span>{formatTime(duration)}</span>
-        </div>
+      <div className="bio-visualizer mb-3">
+        <canvas ref={canvasRef} className="h-full w-full" />
+      </div>
+
+      <div className="bio-progress mb-1.5" onClick={handleSeek}>
+        <div ref={progressFillRef} className="bio-progress-fill" style={{ width: "0%" }} />
+      </div>
+      <div className="mb-3 flex justify-between font-mono text-[0.6rem] text-[var(--text-faint)]">
+        <span ref={currentTimeRef}>0:00</span>
+        <span>{formatTime(duration)}</span>
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={playPrev} className="bio-control flex-1" aria-label="Previous track">Prev</button>
-        <button onClick={togglePlay} className="bio-control bio-control-primary flex-1" aria-label="Play or pause">
-          {isPlaying ? "Pause" : "Play"}
+        <button onClick={playPrev} className="bio-control" aria-label="Previous track">
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 5h2v14H6zM20 5v14L9 12z" />
+          </svg>
         </button>
-        <button onClick={playNext} className="bio-control flex-1" aria-label="Next track">Next</button>
+        <button
+          onClick={togglePlay}
+          className="bio-control bio-control-primary flex-1"
+          aria-label="Play or pause"
+        >
+          {isPlaying ? (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
+            </svg>
+          ) : (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 5l12 7-12 7z" />
+            </svg>
+          )}
+        </button>
+        <button onClick={playNext} className="bio-control" aria-label="Next track">
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 5h2v14h-2zM4 5l11 7-11 7z" />
+          </svg>
+        </button>
       </div>
 
       <audio ref={audioRef} />

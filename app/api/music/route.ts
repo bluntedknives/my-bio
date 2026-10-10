@@ -8,7 +8,8 @@ type TrackMeta = {
   image?: string;
 };
 
-const MUSIC_DIR = path.join(process.cwd(), "public", "music", "music", "SoundCloud.app_Leaks");
+const MUSIC_DIR = path.join(process.cwd(), "public", "music", "maui");
+const MUSIC_URL_BASE = "/music/maui";
 
 const synchsafeToInt = (buffer: Buffer) => {
   return (
@@ -92,43 +93,6 @@ const parseId3v2 = async (filePath: string): Promise<TrackMeta> => {
       if (frameId === "TIT2") meta.title = decodeTextFrame(frameData);
       if (frameId === "TPE1") meta.artist = decodeTextFrame(frameData);
       if (frameId === "TALB") meta.album = decodeTextFrame(frameData);
-      
-      if (frameId === "APIC") {
-        try {
-          // APIC frame layout:
-          // <Header for 'APIC', ID3v2.2 or v2.3/v2.4>
-          // Text encoding $xx
-          // MIME type <text string> $00
-          // Picture type $xx
-          // Description <text string according to encoding> $00 (or $00 00)
-          // Picture data <binary data>
-          const encoding = frameData[0];
-          let mimeEnd = frameData.indexOf(0, 1);
-          if (mimeEnd === -1) mimeEnd = 1;
-          const mimeType = frameData.toString("ascii", 1, mimeEnd) || "image/jpeg";
-          const pictureType = frameData[mimeEnd + 1];
-          
-          let pictureDataStart = mimeEnd + 2;
-          // Skip description
-          if (encoding === 1 || encoding === 2) { // UTF-16
-            // Look for 00 00
-            let descEnd = frameData.indexOf("\0\0", pictureDataStart);
-            if (descEnd !== -1) {
-              pictureDataStart = descEnd + 2;
-            }
-          } else {
-            let descEnd = frameData.indexOf(0, pictureDataStart);
-            if (descEnd !== -1) {
-              pictureDataStart = descEnd + 1;
-            }
-          }
-          
-          const pictureData = frameData.subarray(pictureDataStart);
-          if (pictureData.length > 0) {
-            meta.image = `data:${mimeType};base64,${pictureData.toString("base64")}`;
-          }
-        } catch {}
-      }
 
       offset = frameDataEnd;
     }
@@ -170,8 +134,39 @@ const readMetadata = async (filePath: string): Promise<TrackMeta> => {
   return parseId3v1(filePath);
 };
 
+const leadingNumber = (fileName: string) => {
+  const match = fileName.match(/^(\d+)/);
+  return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+};
+
 const fallbackTitle = (fileName: string) => {
-  return fileName.replace(/(\.mp3)+$/i, "").replace(/_/g, " ").trim();
+  return fileName
+    .replace(/(\.mp3)+$/i, "")
+    .replace(/^\d+\s*/, "")
+    .replace(/_/g, " ")
+    .trim();
+};
+
+const findCover = async (): Promise<string | null> => {
+  const candidates = ["cover.jpg", "cover.jpeg", "cover.png", "cover.webp"];
+  for (const name of candidates) {
+    try {
+      await fs.access(path.join(MUSIC_DIR, name));
+      return `${MUSIC_URL_BASE}/${name}`;
+    } catch {}
+  }
+  return null;
+};
+
+const artUrlFor = (fileName: string, artNames: Set<string>): string | null => {
+  const base = fileName.replace(/\.mp3$/i, "");
+  for (const ext of ["jpg", "jpeg", "png", "webp"]) {
+    const name = `${base}.${ext}`;
+    if (artNames.has(name)) {
+      return `${MUSIC_URL_BASE}/art/${encodeURIComponent(name)}`;
+    }
+  }
+  return null;
 };
 
 export async function GET(): Promise<Response> {
@@ -180,20 +175,15 @@ export async function GET(): Promise<Response> {
     const files = entries
       .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".mp3"))
       .map((entry) => entry.name)
-      .sort((a, b) => {
-        const priority1 = "cute jumpstyle";
-        const priority2 = "did i tell u that i miss u";
-        
-        const aLower = a.toLowerCase();
-        const bLower = b.toLowerCase();
+      .sort((a, b) => leadingNumber(a) - leadingNumber(b) || a.localeCompare(b));
 
-        if (aLower.includes(priority1)) return -1;
-        if (bLower.includes(priority1)) return 1;
-        if (aLower.includes(priority2)) return -1;
-        if (bLower.includes(priority2)) return 1;
-        
-        return a.localeCompare(b);
-      });
+    let artNames = new Set<string>();
+    try {
+      const artEntries = await fs.readdir(path.join(MUSIC_DIR, "art"));
+      artNames = new Set(artEntries);
+    } catch {}
+
+    const cover = await findCover();
 
     const tracks = await Promise.all(
       files.map(async (fileName, index) => {
@@ -203,34 +193,19 @@ export async function GET(): Promise<Response> {
         const artist = meta.artist?.trim() || "";
         const album = meta.album?.trim() || "";
 
-        const imageBase = fileName.replace(/(\.mp3)+$/i, "");
-        const imageExtensions = [".png", ".jpg", ".jpeg", ".gif"];
-        let image = meta.image || "/images/ui/player.png";
-
-        if (!meta.image) {
-          for (const ext of imageExtensions) {
-            try {
-              const imgPath = path.join(MUSIC_DIR, imageBase + ext);
-              await fs.access(imgPath);
-              image = `/music/music/SoundCloud.app_Leaks/${encodeURIComponent(imageBase + ext)}`;
-              break;
-            } catch {}
-          }
-        }
-
         return {
           id: `${index}-${fileName}`,
-          src: `/music/music/SoundCloud.app_Leaks/${encodeURIComponent(fileName)}`,
+          src: `${MUSIC_URL_BASE}/${encodeURIComponent(fileName)}`,
           title,
           artist,
           album,
-          image,
+          image: artUrlFor(fileName, artNames) || cover || "/images/ui/player.png",
         };
       })
     );
 
-    return Response.json({ tracks });
+    return Response.json({ cover, tracks });
   } catch {
-    return Response.json({ tracks: [] });
+    return Response.json({ cover: null, tracks: [] });
   }
 }

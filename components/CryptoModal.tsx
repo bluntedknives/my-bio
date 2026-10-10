@@ -1,23 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CRYPTO_DATA = {
   eth: {
     name: "Ethereum",
+    ticker: "ETH",
     address: "0xF631fd9773740056cd116AA1364E894B448C5CF0",
-    color: "#627EEA"
+    color: "#627EEA",
   },
   btc: {
     name: "Bitcoin",
+    ticker: "BTC",
     address: "bc1pnu4rw22fqz5v3y6tvmx9ject7pwfayc0mr28ecdn6w3sx6xdrjmsh5tw5k",
-    color: "#F7931A"
+    color: "#F7931A",
   },
   sol: {
     name: "Solana",
+    ticker: "SOL",
     address: "3mG96WjgDNaj1R8XkxifheoBsoPisVTKwDHFo4ErMeRy",
-    color: "#14F195"
-  }
+    color: "#14F195",
+  },
 };
 
 type CryptoModalProps = {
@@ -26,55 +30,104 @@ type CryptoModalProps = {
 };
 
 export default function CryptoModal({ selectedCrypto, onClose }: CryptoModalProps) {
-  if (!selectedCrypto) return null;
+  const [copied, setCopied] = useState(false);
 
-  const data = CRYPTO_DATA[selectedCrypto];
+  useEffect(() => {
+    if (!selectedCrypto) return;
+    setCopied(false);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [selectedCrypto, onClose]);
+
+  const data = selectedCrypto ? CRYPTO_DATA[selectedCrypto] : null;
+
+  const copy = async () => {
+    if (!data) return;
+    try {
+      await navigator.clipboard.writeText(data.address);
+    } catch {
+      const input = document.createElement("textarea");
+      input.value = data.address;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-        <motion.div 
+      {data && (
+        <motion.div
+          className="crypto-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        />
-        <motion.div 
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="relative w-full max-w-sm rounded-2xl bg-[rgba(14,14,16,0.92)] p-6 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-2xl ring-1 ring-white/10"
         >
-          <div className="mb-6 text-center">
-            <h2 className="mb-2 text-xl font-bold uppercase tracking-widest text-white" style={{ color: data.color }}>
-              Send {data.name}
-            </h2>
-            <div className="mx-auto mb-6 aspect-square w-40 rounded-xl border border-white/10 bg-white p-2.5">
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${data.address}`} 
-                alt="QR Code"
+          <motion.div
+            className="crypto-card"
+            style={{ "--crypto": data.color } as React.CSSProperties}
+            initial={{ scale: 0.94, opacity: 0, y: 16 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.96, opacity: 0, y: 10 }}
+            transition={{ type: "spring", stiffness: 320, damping: 26 }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button className="crypto-close" onClick={onClose} aria-label="Close">
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+
+            <div className="crypto-head">
+              <span className="crypto-badge">{data.ticker}</span>
+              <div className="min-w-0">
+                <div className="crypto-title">Receive {data.name}</div>
+                <div className="crypto-sub">Scan or copy the address below</div>
+              </div>
+            </div>
+
+            <div className="crypto-qr">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data=${data.address}`}
+                alt={`${data.name} address QR code`}
                 className="h-full w-full"
               />
             </div>
-            <div className="group relative cursor-pointer" onClick={() => {
-              navigator.clipboard.writeText(data.address);
-              alert("Address copied to clipboard!");
-            }}>
-              <p className="break-all font-mono text-xs text-[var(--text-muted)] transition-colors group-hover:text-white">
-                {data.address}
-              </p>
-              <p className="mt-2 text-[0.62rem] uppercase tracking-[0.2em] text-[var(--text-faint)]">Click to copy address</p>
-              </div>
-              </div>
-              <button 
-              onClick={onClose}
-              className="bio-control bio-control-primary w-full"
-              >
-              Close
-              </button>
+
+            <button
+              className={`crypto-address ${copied ? "is-copied" : ""}`}
+              onClick={copy}
+            >
+              <span className="crypto-address-text">{data.address}</span>
+              <span className="crypto-copy-chip">
+                {copied ? (
+                  <>
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="9" width="11" height="11" rx="2" />
+                      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                    </svg>
+                    Copy
+                  </>
+                )}
+              </span>
+            </button>
+          </motion.div>
         </motion.div>
-      </div>
+      )}
     </AnimatePresence>
   );
 }

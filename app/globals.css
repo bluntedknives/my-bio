@@ -53,6 +53,13 @@ body {
   letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -68,6 +75,33 @@ body {
   display: flex;
   justify-content: center;
   padding: 3rem 1.25rem 4rem;
+}
+
+/* Subtle full-screen accent wash that shifts with the current track */
+.bio-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      60% 55% at 50% -8%,
+      color-mix(in srgb, var(--accent, #fff) 14%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      55% 45% at 85% 108%,
+      color-mix(in srgb, var(--accent, #fff) 9%, transparent),
+      transparent 65%
+    );
+  opacity: 0;
+  transition: opacity 0.8s ease, background 0.8s ease;
+}
+
+/* Only tint the background while audio is playing */
+.audio-playing .bio-root::before {
+  opacity: 1;
 }
 
 .bio-reveal {
@@ -95,37 +129,48 @@ body {
   gap: 1.35rem;
 }
 
-/* ---------- Header ---------- */
+/* ---------- Hero ---------- */
 
-.bio-header {
+.bio-hero {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.9rem;
+  text-align: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.bio-avatar-wrap {
+  position: relative;
+  padding: 3px;
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.04)
+  );
+  margin-bottom: 0.3rem;
+  transition: background 0.6s ease;
+}
+
+/* Accent ring lights up only while audio is playing */
+.audio-playing .bio-avatar-wrap {
+  background: conic-gradient(
+    from 180deg,
+    color-mix(in srgb, var(--accent, #fff) 75%, transparent),
+    rgba(255, 255, 255, 0.05),
+    color-mix(in srgb, var(--accent, #fff) 50%, transparent)
+  );
 }
 
 .bio-avatar {
-  width: 58px;
-  height: 58px;
+  display: block;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
   filter: grayscale(1) contrast(1.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px -16px rgba(0, 0, 0, 0.95);
-}
-
-.bio-name {
-  font-size: 1.12rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  color: #ffffff;
-  line-height: 1.15;
-}
-
-.bio-handle {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.68rem;
-  color: var(--text-faint);
+  border: 3px solid var(--theme-back);
 }
 
 .bio-kicker {
@@ -133,17 +178,34 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-family: ui-monospace, monospace;
-  font-size: 0.64rem;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 0.1rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: lowercase;
+  color: var(--text-faint);
 }
 
-.bio-kicker::before {
-  content: "";
-  width: 0.9rem;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.4);
+.bio-name {
+  font-family: "Array-BoldWide", ui-monospace, monospace;
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: #ffffff;
+}
+
+.bio-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.bio-handle {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 
 .tui-status-dot,
@@ -167,11 +229,14 @@ body {
   flex-direction: column;
 }
 
-.bio-bio {
-  font-size: 0.82rem;
-  line-height: 1.7;
-  color: var(--text-muted);
-  min-height: 2.6rem;
+.bio-typing {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: rgba(255, 255, 255, 0.72);
+  text-align: center;
+  min-height: 3rem;
 }
 
 .bio-foot {
@@ -182,6 +247,37 @@ body {
   margin-top: 0.2rem;
   padding-top: 1.1rem;
   border-top: 1px solid var(--glass-border);
+}
+
+.bio-foot-note {
+  font-family: ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.bio-views {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 40;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+  pointer-events: none;
+}
+
+.bio-views.is-in {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* ---------- Typography helpers ---------- */
@@ -202,7 +298,8 @@ body {
   content: "";
   width: 0.85rem;
   height: 1px;
-  background: rgba(255, 255, 255, 0.28);
+  background: color-mix(in srgb, var(--accent, #fff) 45%, rgba(255, 255, 255, 0.2));
+  transition: background 0.6s ease;
 }
 
 /* ---------- Rows (socials / wallets) — cosmin button recipe ---------- */
@@ -229,6 +326,12 @@ body {
 .bio-row:hover {
   background: var(--btn-bg-hover);
   transform: translateY(0.5px);
+}
+
+.audio-playing .bio-row:hover {
+  box-shadow: var(--lift),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent, #fff) 30%, rgba(255, 255, 255, 0.08)),
+    var(--sheen);
 }
 
 .bio-row-icon {
@@ -288,18 +391,111 @@ body {
 /* ---------- Music player ---------- */
 
 .bio-player {
+  position: relative;
   border: none;
   border-radius: 12px;
   background: var(--btn-bg);
-  box-shadow: var(--lift), var(--ring), var(--sheen);
+  box-shadow: var(--lift), inset 0 0 0 1px rgba(255, 255, 255, 0.08), var(--sheen);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  padding: 0.9rem 1rem 1rem;
+  padding: 0.85rem 0.9rem 0.9rem;
   overflow: hidden;
+  transition: box-shadow 0.6s ease;
+}
+
+/* Accent glow only while audio is actually playing */
+.audio-playing .bio-player {
+  box-shadow: var(--lift),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent, #fff) 26%, rgba(255, 255, 255, 0.08)),
+    0 0 34px -14px color-mix(in srgb, var(--accent, #fff) 55%, transparent),
+    var(--sheen);
+}
+
+.bio-player::before {
+  content: "";
+  position: absolute;
+  inset: -1px -1px auto -1px;
+  height: 42%;
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    color-mix(in srgb, var(--accent, #fff) 22%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease, background 0.6s ease;
+}
+
+.audio-playing .bio-player::before {
+  opacity: 0.75;
+}
+
+.bio-player-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.bio-track-art {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: box-shadow 0.6s ease;
+}
+
+.audio-playing .bio-track-art {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--accent, #fff) 35%, transparent),
+    0 6px 18px -8px color-mix(in srgb, var(--accent, #fff) 60%, transparent);
+}
+
+.bio-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.bio-eq i {
+  width: 2px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent, #fff);
+  opacity: 0.9;
+}
+
+.bio-eq.is-on i {
+  animation: bioEq 0.9s ease-in-out infinite;
+}
+
+.bio-eq.is-on i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.bio-eq.is-on i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.bio-eq.is-on i:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes bioEq {
+  0%,
+  100% {
+    height: 4px;
+  }
+  50% {
+    height: 15px;
+  }
 }
 
 .bio-visualizer {
-  height: 46px;
+  height: 42px;
   width: 100%;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
@@ -308,26 +504,19 @@ body {
 }
 
 .bio-track-title {
-  font-size: 0.78rem;
-  font-weight: 550;
+  font-size: 0.8rem;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: #ffffff;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .bio-track-artist {
-  font-size: 0.66rem;
+  font-size: 0.65rem;
   letter-spacing: 0.02em;
-  color: var(--text-faint);
-  margin-top: 0.15rem;
-}
-
-.bio-track-art {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  object-fit: cover;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  color: color-mix(in srgb, var(--accent, #fff) 70%, rgba(255, 255, 255, 0.5));
+  margin-top: 0.18rem;
+  transition: color 0.6s ease;
 }
 
 .bio-progress {
@@ -345,10 +534,10 @@ body {
   border-radius: 999px;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.6),
-    rgba(255, 255, 255, 0.95)
+    color-mix(in srgb, var(--accent, #fff) 55%, rgba(255, 255, 255, 0.5)),
+    var(--accent, #fff)
   );
-  transition: width 0.25s linear;
+  transition: width 0.25s linear, background 0.6s ease;
 }
 
 .bio-control {
@@ -382,6 +571,14 @@ body {
   color: #050506;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 4px 12px -4px rgba(0, 0, 0, 0.4);
+  transition: background 0.6s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.audio-playing .bio-control-primary {
+  background: color-mix(in srgb, var(--accent, #fff) 88%, #ffffff);
+  color: #050506;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 6px 18px -8px color-mix(in srgb, var(--accent, #fff) 80%, transparent);
 }
 
 .bio-control-primary:hover {
@@ -468,6 +665,170 @@ body {
   justify-content: center;
   cursor: pointer;
 }
+
+/* ---------- Crypto modal ---------- */
+
+.crypto-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(4, 4, 6, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.crypto-card {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  padding: 1.15rem;
+  border-radius: 18px;
+  background: rgba(14, 14, 17, 0.94);
+  box-shadow: 0 40px 80px -24px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px color-mix(in srgb, var(--crypto, #fff) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.crypto-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px -1px auto -1px;
+  height: 55%;
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    color-mix(in srgb, var(--crypto, #fff) 20%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.crypto-close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.crypto-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.crypto-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.crypto-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #050506;
+  background: var(--crypto, #fff);
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--crypto, #fff) 80%, transparent);
+}
+
+.crypto-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.crypto-sub {
+  margin-top: 0.12rem;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.crypto-qr {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0.7rem;
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 0.9rem;
+}
+
+.crypto-address {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.65rem;
+  border-radius: 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crypto-address:hover {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.crypto-address.is-copied {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--crypto, #fff) 55%, transparent);
+}
+
+.crypto-address-text {
+  font-family: ui-monospace, monospace;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  word-break: break-all;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.crypto-copy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 0.55rem;
+  border-radius: 8px;
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: #050506;
+  background: var(--crypto, #fff);
+  transition: background 0.2s ease;
+}
+
+.crypto-address.is-copied .crypto-copy-chip {
+  color: #fff;
+  background: color-mix(in srgb, var(--crypto, #fff) 42%, #0b0b0e);
+}
+
 
 .click-text {
   font-family: ui-monospace, monospace;

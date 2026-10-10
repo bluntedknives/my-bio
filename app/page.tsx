@@ -128,22 +128,22 @@ export default function Page() {
 
       <div className={`bio-reveal ${isUnlocked ? "is-in" : ""}`}>
         <div className="bio-column">
-          {/* Header */}
+          {/* Hero */}
           <motion.header
-            className="bio-header"
+            className="bio-hero"
             variants={fadeUp}
             initial="hidden"
             animate={isUnlocked ? "show" : "hidden"}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <img src={discordAvatar} alt="avatar" className="bio-avatar" />
-            <div className="min-w-0">
-              <div className="bio-kicker">hey there</div>
-              <h1 className="bio-name truncate">{discordName}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="tui-status-dot" />
-                <span id="currentStatus" className="bio-handle uppercase tracking-wider">Connecting…</span>
-              </div>
+            <div className="bio-avatar-wrap">
+              <img src={discordAvatar} alt="avatar" className="bio-avatar" />
+            </div>
+            <div className="bio-kicker">hey there</div>
+            <h1 className="bio-name">{discordName}</h1>
+            <div className="bio-status">
+              <span className="tui-status-dot" />
+              <span id="currentStatus" className="bio-handle">Connecting…</span>
             </div>
           </motion.header>
 
@@ -155,7 +155,7 @@ export default function Page() {
             animate={isUnlocked ? "show" : "hidden"}
             transition={{ duration: 0.6, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
           >
-            <p className="bio-bio">
+            <p className="bio-typing">
               <span id="typingText"></span>
               <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Owned some com servers &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
             </p>
@@ -255,9 +255,14 @@ export default function Page() {
               <button onClick={() => setSelectedCrypto("btc")} className="bio-pill" title="Bitcoin">{btcIcon}</button>
               <button onClick={() => setSelectedCrypto("sol")} className="bio-pill" title="Solana">{solIcon}</button>
             </div>
-            <ViewCounter />
+            <span className="bio-foot-note">with love</span>
           </footer>
         </div>
+      </div>
+
+      {/* Views — pinned to the corner */}
+      <div className={`bio-views ${isUnlocked ? "is-in" : ""}`}>
+        <ViewCounter />
       </div>
     </div>
   );
