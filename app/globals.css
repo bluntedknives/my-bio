@@ -81,27 +81,6 @@ body {
   padding: 3rem 1.25rem 4rem;
 }
 
-/* Subtle full-screen accent wash that shifts with the current track's art */
-.bio-root::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      62% 55% at 50% -8%,
-      color-mix(in srgb, var(--accent) 16%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      55% 45% at 85% 108%,
-      color-mix(in srgb, var(--accent) 10%, transparent),
-      transparent 65%
-    );
-  transition: background 0.8s ease;
-}
-
 .bio-reveal {
   width: 100%;
   display: flex;

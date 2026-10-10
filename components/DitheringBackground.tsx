@@ -4,6 +4,8 @@ import type { PaperShaderElement } from "@paper-design/shaders";
 import { Dithering } from "@paper-design/shaders-react";
 import { useEffect, useRef } from "react";
 
+import { ACCENT_EVENT, AUDIO_REACTIVE_EVENT } from "../lib/bio-events";
+
 type AudioReactiveDetail = {
   bass: number;
   energy: number;
@@ -11,16 +13,47 @@ type AudioReactiveDetail = {
   time: number;
 };
 
-const AUDIO_REACTIVE_EVENT = "bio:audio-reactive";
-
 const clamp = (value: number, min: number, max: number) => {
   return Math.min(max, Math.max(min, value));
+};
+
+const hexToRgb = (hex: string): [number, number, number] => {
+  const clean = hex.replace(/^#/, "");
+  const full =
+    clean.length === 3
+      ? clean
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : clean;
+  const r = parseInt(full.slice(0, 2), 16) / 255;
+  const g = parseInt(full.slice(2, 4), 16) / 255;
+  const b = parseInt(full.slice(4, 6), 16) / 255;
+  return [
+    Number.isFinite(r) ? r : 0.5,
+    Number.isFinite(g) ? g : 0.5,
+    Number.isFinite(b) ? b : 0.5,
+  ];
 };
 
 export default function DitheringBackground() {
   const shaderRef = useRef<PaperShaderElement | null>(null);
 
   useEffect(() => {
+    // Recolor the actual shader (not an overlay) whenever the track changes.
+    const handleAccent = (event: Event) => {
+      const mount = shaderRef.current?.paperShaderMount;
+      const accent = (event as CustomEvent<{ accent: string }>).detail?.accent;
+      if (!mount || !accent) return;
+
+      const [r, g, b] = hexToRgb(accent);
+      mount.setUniforms({
+        u_colorFront: [r, g, b, 1],
+        // Near-black but tinted, so the whole field shifts subtly with the art.
+        u_colorBack: [r * 0.12, g * 0.12, b * 0.12, 1],
+      });
+    };
+
     const handleAudioReactive = (event: Event) => {
       const mount = shaderRef.current?.paperShaderMount;
       const detail = (event as CustomEvent<AudioReactiveDetail>).detail;
@@ -41,9 +74,11 @@ export default function DitheringBackground() {
       mount.setSpeed(0.8 + pulse * 1.35 + energy * 0.2);
     };
 
+    document.addEventListener(ACCENT_EVENT, handleAccent);
     document.addEventListener(AUDIO_REACTIVE_EVENT, handleAudioReactive);
 
     return () => {
+      document.removeEventListener(ACCENT_EVENT, handleAccent);
       document.removeEventListener(AUDIO_REACTIVE_EVENT, handleAudioReactive);
     };
   }, []);
@@ -71,7 +106,8 @@ export default function DitheringBackground() {
         minPixelRatio={1}
         maxPixelCount={1500000}
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(153,153,153,0.12),transparent_34%),linear-gradient(180deg,rgba(0,0,0,0.4),rgba(0,0,0,0.8))]" />
+      {/* Neutral vignette only — no tinted overlay pretending to be the background */}
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.75))]" />
     </div>
   );
 }

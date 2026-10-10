@@ -3,6 +3,8 @@
 import type { MouseEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { ACCENT_EVENT, AUDIO_REACTIVE_EVENT } from "../lib/bio-events";
+
 type Track = {
   id: string;
   src: string;
@@ -70,7 +72,6 @@ const hsvToHex = (h: number, s: number, v: number) => {
 };
 
 export default function MusicPlayer() {
-  const AUDIO_REACTIVE_EVENT = "bio:audio-reactive";
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -97,6 +98,9 @@ export default function MusicPlayer() {
   useEffect(() => {
     accentRef.current = accent;
     document.documentElement.style.setProperty("--accent", accent);
+    document.dispatchEvent(
+      new CustomEvent(ACCENT_EVENT, { detail: { accent } })
+    );
   }, [accent]);
 
   const currentTrack = tracks[currentIndex];
