@@ -14,5 +14,4 @@ export { default as PopupController } from "./PopupController";
 export { default as RowAnimations } from "./RowAnimations";
 export { default as StatusPoller } from "./StatusPoller";
 export { default as TitleAnimator } from "./TitleAnimator";
-export { default as TypingEffect } from "./TypingEffect";
 export { default as UnlockOverlay } from "./UnlockOverlay";

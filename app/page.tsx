@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import DiscordStatus from "../components/DiscordStatus";
 import Clock from "../components/Clock";
 import MusicPlayer from "../components/MusicPlayer";
-import TypingEffect from "../components/TypingEffect";
 import Lockscreen from "../components/Lockscreen";
 import StatusPoller from "../components/StatusPoller";
 import CryptoModal from "../components/CryptoModal";
@@ -126,7 +125,6 @@ export default function Page() {
     <div className="bio-root selection:bg-white selection:text-black">
       <DiscordStatus />
       <StatusPoller />
-      <TypingEffect active={isUnlocked} />
       <Lockscreen onUnlock={() => setIsUnlocked(true)} />
 
       <CryptoModal selectedCrypto={selectedCrypto} onClose={() => setSelectedCrypto(null)} />
@@ -148,22 +146,9 @@ export default function Page() {
               <span className="bio-kicker-age">owner</span>
             </div>
             <h1 className="bio-name">{discordName}</h1>
+            <div className="bio-handle" id="currentStatusHandle">{discordHandle}</div>
             <Clock />
           </motion.header>
-
-          {/* Bio */}
-          <motion.section
-            className="bio-section"
-            variants={fadeUp}
-            initial="hidden"
-            animate={isUnlocked ? "show" : "hidden"}
-            transition={{ duration: 0.6, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <p className="bio-typing">
-              <span id="typingText"></span>
-              <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
-            </p>
-          </motion.section>
 
           {/* Music — always mounted so playback never stops */}
           <motion.section

@@ -13,7 +13,6 @@ import PopupController from "./PopupController";
 import RowAnimations from "./RowAnimations";
 import StatusPoller from "./StatusPoller";
 import TitleAnimator from "./TitleAnimator";
-import TypingEffect from "./TypingEffect";
 
 export default function ClientEffects() {
   useEffect(() => {
@@ -57,7 +56,6 @@ export default function ClientEffects() {
       <RowAnimations />
       <StatusPoller />
       <TitleAnimator />
-      <TypingEffect />
     </>
   );
 }
