@@ -21,9 +21,6 @@ const STATUS_ICONS: Record<string, string> = {
   offline: "/images/ui/offline.png",
 };
 
-// Custom small icon shown next to the status/handle line
-const CUSTOM_STATUS_ICON = "/images/ui/custom-icon.png";
-
 type LanyardResponse = {
   status?: string;
   username?: string;
@@ -58,11 +55,6 @@ export default function DiscordStatus() {
           const statusTextTargets = document.querySelectorAll<HTMLElement>(".discord-status-text, #currentStatus, .bio-status-label");
           statusTextTargets.forEach((node) => {
             node.textContent = STATUS_LABELS[status] ?? STATUS_LABELS.offline;
-          });
-
-          const customIconTargets = document.querySelectorAll<HTMLImageElement>(".bio-status-icon");
-          customIconTargets.forEach((node) => {
-            node.src = CUSTOM_STATUS_ICON;
           });
 
           const nameTargets = document.querySelectorAll<HTMLElement>(".username, .discord-username");
