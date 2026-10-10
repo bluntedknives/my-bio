@@ -136,6 +136,31 @@ body {
   gap: 0.3rem;
 }
 
+.bio-hero-avatar {
+  display: block;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.1rem;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.bio-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: #747f8d;
+  box-shadow: 0 0 0 2px rgba(8, 8, 10, 0.7);
+  transition: background 0.4s ease;
+}
+
+.bio-status-online { background: #3ba55d; }
+.bio-status-idle { background: #f0b232; }
+.bio-status-dnd { background: #ed4245; }
+.bio-status-offline { background: #747f8d; }
+
 .bio-handle-icon {
   width: 13px;
   height: 13px;

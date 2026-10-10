@@ -75,6 +75,8 @@ export default function Page() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [discordHandle, setDiscordHandle] = useState("@whosbleedingg");
   const [discordName, setDiscordName] = useState("blunted");
+  const [discordAvatar, setDiscordAvatar] = useState("");
+  const [discordStatus, setDiscordStatus] = useState<"online" | "idle" | "dnd" | "offline">("offline");
   const [selectedCrypto, setSelectedCrypto] = useState<"eth" | "btc" | "sol" | null>(null);
   const [showTerminal, setShowTerminal] = useState(false);
 
@@ -86,20 +88,31 @@ export default function Page() {
     if (!isClient) return;
     let active = true;
 
-    fetch("/api/discord-user", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((data: { username?: string; displayName?: string }) => {
-        if (!active) return;
-        const username = data.username?.trim() || data.displayName?.trim() || "";
-        if (username) {
-          setDiscordHandle(`@${username}`);
-          setDiscordName(username);
-        }
-      })
-      .catch(() => {});
+    const applyPresence = () => {
+      fetch("/api/discord-user", { cache: "no-store" })
+        .then((response) => response.json())
+        .then((data: { username?: string; displayName?: string; avatarUrl?: string; status?: string }) => {
+          if (!active) return;
+          if (data.avatarUrl) setDiscordAvatar(data.avatarUrl);
+          const username = data.username?.trim() || data.displayName?.trim() || "";
+          if (username) {
+            setDiscordHandle(`@${username}`);
+            setDiscordName(username);
+          }
+          const status = data.status;
+          if (status === "online" || status === "idle" || status === "dnd" || status === "offline") {
+            setDiscordStatus(status);
+          }
+        })
+        .catch(() => {});
+    };
+
+    applyPresence();
+    const id = window.setInterval(applyPresence, 30_000);
 
     return () => {
       active = false;
+      window.clearInterval(id);
     };
   }, [isClient]);
 
@@ -143,7 +156,16 @@ export default function Page() {
             <div className="bio-hero-pin">
               <img src="/images/ui/custom-icon.png" alt="" className="bio-handle-icon" />
               <span className="bio-handle" id="currentStatusHandle">{discordHandle}</span>
+              <span className={`bio-status-dot bio-status-${discordStatus}`} />
             </div>
+            {discordAvatar && (
+              <img
+                src={discordAvatar}
+                alt=""
+                className="bio-hero-avatar"
+                referrerPolicy="no-referrer"
+              />
+            )}
             <div className="bio-kicker">
               wazup
               <span className="bio-kicker-sep">·</span>
