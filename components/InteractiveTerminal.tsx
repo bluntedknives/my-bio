@@ -104,7 +104,7 @@ export default function InteractiveTerminal({ onExit }: { onExit?: () => void })
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col h-full font-mono text-[10px] leading-relaxed text-[#888888]"
+      className="flex flex-col h-full font-mono text-[10px] leading-relaxed text-[var(--text-muted)]"
       onClick={() => inputRef.current?.focus()}
     >
       <div ref={scrollRef} className="flex-1 overflow-y-auto mb-4 scrollbar-hide space-y-2">
@@ -112,7 +112,7 @@ export default function InteractiveTerminal({ onExit }: { onExit?: () => void })
           <div key={i}>
             {item.command && (
               <div className="flex gap-2">
-                <span className="text-[#666666]">guest@bio:~$</span>
+                <span className="text-[var(--text-faint)]">guest@bio:~$</span>
                 <span className="text-white">{item.command}</span>
               </div>
             )}
@@ -121,8 +121,8 @@ export default function InteractiveTerminal({ onExit }: { onExit?: () => void })
         ))}
       </div>
 
-      <div className="flex gap-2 items-center border-t border-[#111111] pt-3 bg-black/50 sticky bottom-0">
-        <span className="text-[#666666] shrink-0">guest@bio:~$</span>
+      <div className="flex gap-2 items-center border-t border-white/5 pt-3 bg-black/50 sticky bottom-0">
+        <span className="text-[var(--text-faint)] shrink-0">guest@bio:~$</span>
         <input
           ref={inputRef}
           type="text"

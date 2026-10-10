@@ -24,40 +24,45 @@ const projects: Project[] = [
 export default function Projects() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="space-y-8"
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="tui-label">PROJECTS INDEX</div>
-      <div className="flex flex-col gap-6">
+      <div className="section-label">Projects</div>
+      <div className="flex flex-col gap-2.5">
         {projects.map((project, index) => (
           <a
             key={index}
             href={project.link}
             target="_blank"
             rel="noreferrer"
-            className="group block"
+            className="bio-project group"
           >
-            <div className="flex items-start gap-4">
-              <span className="text-[8px] font-bold text-[#666666] mt-1 group-hover:text-white transition-colors">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-['Array-BoldWide'] text-[11px] tracking-wider text-[#888888] group-hover:text-white transition-all duration-300">
-                    {project.title}
-                  </span>
-                  <div className="h-[1px] flex-1 mx-4 bg-[#111111] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
-                  <span className="text-[7px] font-bold text-[#555555] group-hover:text-white opacity-0 group-hover:opacity-100 transition-all">
-                    LAUNCH URL
-                  </span>
-                </div>
-                <p className="text-[10px] leading-relaxed text-[#999999] group-hover:text-[#888888] transition-colors max-w-[400px]">
-                  {project.description}
-                </p>
+            <div className="flex items-center justify-between gap-3 mb-1.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="font-mono text-[0.62rem] text-[var(--text-faint)]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="text-[0.82rem] font-semibold tracking-tight text-white truncate">
+                  {project.title}
+                </span>
               </div>
+              <svg
+                className="h-3.5 w-3.5 shrink-0 text-[var(--text-faint)] transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M7 17L17 7M7 7h10v10" />
+              </svg>
             </div>
+            <p className="text-[0.74rem] leading-relaxed text-[var(--text-muted)]">
+              {project.description}
+            </p>
           </a>
         ))}
       </div>

@@ -338,38 +338,45 @@ export default function MusicPlayer() {
   }, []);
 
   return (
-    <div className="void-player">
-      <div className="tui-label">AUDIO.SYS</div>
-      
-      <div className="visualizer-container">
+    <div className="bio-player">
+      <div className="section-label">Now Playing</div>
+
+      <div className="bio-visualizer mb-4">
         <canvas ref={canvasRef} className="h-full w-full" />
       </div>
 
-      <div className="mb-4">
-        <div className="void-track-title">{currentTrack?.title || "NO MEDIA"}</div>
-        <div className="void-track-artist">{currentTrack?.artist || "UNKNOWN SOURCE"}</div>
+      <div className="flex items-center gap-3 mb-4">
+        {currentTrack?.image ? (
+          <img src={currentTrack.image} alt="" className="bio-track-art" />
+        ) : (
+          <div className="bio-track-art bg-white/[0.03]" />
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="bio-track-title truncate">{currentTrack?.title || "No media"}</div>
+          <div className="bio-track-artist truncate">{currentTrack?.artist || currentTrack?.album || "Unknown source"}</div>
+        </div>
       </div>
 
       <div className="mb-4">
-        <div className="h-[1px] w-full bg-[#111111] relative cursor-pointer mb-2" onClick={handleSeek}>
-          <div 
+        <div className="bio-progress mb-2" onClick={handleSeek}>
+          <div
             ref={progressFillRef}
-            className="h-full bg-[var(--theme-accent)] transition-all duration-300" 
-            style={{ width: "0%" }} 
+            className="bio-progress-fill"
+            style={{ width: "0%" }}
           />
         </div>
-        <div className="flex justify-between text-[7px] text-[#666666] font-bold tracking-widest">
+        <div className="flex justify-between font-mono text-[0.62rem] text-[var(--text-faint)]">
           <span ref={currentTimeRef}>0:00</span>
           <span>{formatTime(duration)}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-[1px] bg-[#111111] border border-[#111111]">
-        <button onClick={playPrev} className="bg-black py-2 text-[8px] font-bold tracking-widest text-[#888888] hover:text-white transition-colors">BACK</button>
-        <button onClick={togglePlay} className="bg-black py-2 text-[8px] font-bold tracking-widest text-[#888888] hover:text-white transition-colors">
-          {isPlaying ? "PAUSE" : "PLAY"}
+      <div className="flex items-center gap-2">
+        <button onClick={playPrev} className="bio-control flex-1" aria-label="Previous track">Prev</button>
+        <button onClick={togglePlay} className="bio-control bio-control-primary flex-1" aria-label="Play or pause">
+          {isPlaying ? "Pause" : "Play"}
         </button>
-        <button onClick={playNext} className="bg-black py-2 text-[8px] font-bold tracking-widest text-[#888888] hover:text-white transition-colors">NEXT</button>
+        <button onClick={playNext} className="bio-control flex-1" aria-label="Next track">Next</button>
       </div>
 
       <audio ref={audioRef} />

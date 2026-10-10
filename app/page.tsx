@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import Tilt from "react-parallax-tilt";
+import { AnimatePresence, motion } from "framer-motion";
 import DiscordStatus from "../components/DiscordStatus";
 import MusicPlayer from "../components/MusicPlayer";
 import TypingEffect from "../components/TypingEffect";
@@ -56,14 +56,34 @@ const emailIcon = (
   </svg>
 );
 
+const SOCIALS = [
+  { name: "TELEGRAM", val: "@wwersec", link: "https://t.me/wwersec", icon: telegramIcon },
+  { name: "EMAIL", val: "imited@conversations.im", link: "mailto:imited@conversations.im", icon: emailIcon },
+];
+
+const WALLETS = [
+  { name: "ETH", addr: "0xF631fd9773740056cd116AA1364E894B448C5CF0", color: "#627EEA", icon: ethIcon },
+  { name: "BTC", addr: "bc1pnu4rw22fqz5v3y6tvmx9ject7pwfayc0mr28ecdn6w3sx6xdrjmsh5tw5k", color: "#F7931A", icon: btcIcon },
+  { name: "SOL", addr: "3mG96WjgDNaj1R8XkxifheoBsoPisVTKwDHFo4ErMeRy", color: "#14F195", icon: solIcon },
+];
+
+const TABS = [
+  { id: "bio", label: "bio", num: "01" },
+  { id: "projects", label: "projects", num: "02" },
+  { id: "socials", label: "socials", num: "03" },
+  { id: "terminal", label: "terminal", num: "04" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [discordProfileUrl, setDiscordProfileUrl] = useState("https://discord.com");
   const [discordHandle, setDiscordHandle] = useState("@blunted");
+  const [discordName, setDiscordName] = useState("blunted");
   const [discordAvatar, setDiscordAvatar] = useState("/images/profile/87fa4deb047cfdbeaa6166a03806a9a4.jpg");
   const [selectedCrypto, setSelectedCrypto] = useState<"eth" | "btc" | "sol" | null>(null);
-  const [activeTab, setActiveTab] = useState<"bio" | "projects" | "socials" | "terminal">("bio");
+  const [activeTab, setActiveTab] = useState<TabId>("bio");
 
   useEffect(() => {
     setIsClient(true);
@@ -77,15 +97,13 @@ export default function Page() {
       .then((response) => response.json())
       .then((data: { profileUrl?: string; username?: string; displayName?: string; avatarUrl?: string }) => {
         if (!active) return;
-        if (typeof data.profileUrl === "string" && data.profileUrl.length > 0) {
-          setDiscordProfileUrl(data.profileUrl);
-        }
         if (data.avatarUrl) {
           setDiscordAvatar(data.avatarUrl);
         }
         const username = data.username?.trim() || data.displayName?.trim() || "";
         if (username) {
           setDiscordHandle(`@${username}`);
+          setDiscordName(username);
         }
       })
       .catch(() => {});
@@ -101,208 +119,181 @@ export default function Page() {
   }, [discordHandle, isClient]);
 
   if (!isClient) return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8">
-      <svg 
-        className="w-16 h-16 text-white" 
-        viewBox="0 0 128 128" 
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path 
-          d="M64 0C28.656 0 0 28.656 0 64C0 99.344 28.656 128 64 128C99.344 128 128 99.344 128 64C128 28.656 99.344 0 64 0ZM111.456 102.32L71.408 50.848V96H59.504V32H71.408L106.112 76.656C101.44 87.536 94.128 97.024 84.816 104.224L111.456 102.32ZM76.704 32H88.608V44.272L76.704 32Z" 
-          fill="currentColor"
-        />
-      </svg>
-      <div className="text-white font-mono text-xs tracking-[0.5em] animate-pulse uppercase">
-        Initializing Client
+    <div className="bio-root">
+      <div className="flex flex-col items-center justify-center gap-6">
+        <span className="h-8 w-8 animate-spin rounded-full border border-white/10 border-t-white/70" />
+        <div className="font-mono text-[0.65rem] uppercase tracking-[0.4em] text-white/40">
+          Initializing
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[var(--theme-back)] selection:bg-[var(--theme-accent)] selection:text-[var(--theme-back)]">
+    <div className="bio-root selection:bg-white selection:text-black">
       <DiscordStatus />
       <StatusPoller />
       <TypingEffect activeTab={activeTab} />
       <Lockscreen onUnlock={() => setIsUnlocked(true)} />
 
-      <CryptoModal 
-        selectedCrypto={selectedCrypto} 
-        onClose={() => setSelectedCrypto(null)} 
+      <CryptoModal
+        selectedCrypto={selectedCrypto}
+        onClose={() => setSelectedCrypto(null)}
       />
 
       <DitheringBackground />
 
-      <div className={`transition-all duration-1000 ${isUnlocked ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <div className="console-container">
-          <Tilt
-            tiltMaxAngleX={1}
-            tiltMaxAngleY={1}
-            perspective={2000}
-            transitionSpeed={1500}
-            scale={1}
-            gyroscope={true}
-            className="w-full"
-          >
-            <div className="console-unit">
-              {/* Header */}
-              <header className="console-header">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 border border-[#111111] p-0.5">
-                    <img src={discordAvatar} alt="user" className="w-full h-full object-cover grayscale brightness-100" />
-                  </div>
-                  <div>
-                    <h1 className="tui-username text-sm mb-0">{discordHandle}</h1>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1 h-1 bg-[#888888] tui-status-dot"></span>
-                      <span id="currentStatus" className="text-[6px] font-bold tracking-[0.2em] uppercase text-[#888888]">Connecting...</span>
-                    </div>
-                  </div>
+      <div className={`bio-reveal ${isUnlocked ? "is-in" : ""}`}>
+        <main className="bio-shell">
+          {/* Header */}
+          <header className="bio-header">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <img src={discordAvatar} alt="avatar" className="bio-avatar" />
+              <div className="min-w-0">
+                <div className="bio-kicker mb-1">hey there</div>
+                <h1 className="bio-name truncate">{discordName}</h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="tui-status-dot" />
+                  <span id="currentStatus" className="bio-handle uppercase tracking-wider">Connecting…</span>
                 </div>
-                <ViewCounter />
-              </header>
-
-              {/* Internal Nav */}
-              <nav className="console-nav">
-                <button 
-                  onClick={() => setActiveTab("bio")}
-                  className={`console-nav-btn ${activeTab === "bio" ? "active" : ""}`}
-                >
-                  01 BIO
-                </button>
-                <button 
-                  onClick={() => setActiveTab("projects")}
-                  className={`console-nav-btn ${activeTab === "projects" ? "active" : ""}`}
-                >
-                  02 PROJ
-                </button>
-                <button 
-                  onClick={() => setActiveTab("socials")}
-                  className={`console-nav-btn ${activeTab === "socials" ? "active" : ""}`}
-                >
-                  03 SOCL
-                </button>
-                <button 
-                  onClick={() => setActiveTab("terminal")}
-                  className={`console-nav-btn ${activeTab === "terminal" ? "active" : ""}`}
-                >
-                  04 TERM
-                </button>
-              </nav>
-
-              {/* Fixed Height Main Area */}
-              <main className="console-body">
-                <div className="pt-6 h-full">
-                  <div className={activeTab === "bio" ? "block" : "hidden"}>
-                    <div className="space-y-10">
-                      <section>
-                        <div className="tui-label">SYSTEM BIO</div>
-                        <p className="text-[12px] leading-relaxed text-[#555555] font-medium tracking-wide">
-                          <span id="typingText"></span>
-                          <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Owned some com servers &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
-                        </p>
-                      </section>
-
-                      <section className="pt-6">
-                        <MusicPlayer />
-                      </section>
-                    </div>
-                  </div>
-
-
-                  <div className={activeTab === "projects" ? "block" : "hidden"}>
-                    <Projects />
-                  </div>
-
-                  <div className={activeTab === "socials" ? "block" : "hidden"}>
-                    <section className="mb-8">
-                      <div className="tui-label">CONTACT & SOCIALS</div>
-                      <div className="grid grid-cols-1 gap-2">
-                        {[
-                          { name: "TELEGRAM", val: "@wwersec", link: "https://t.me/wwersec", icon: telegramIcon },
-                          { name: "EMAIL", val: "imited@conversations.im", link: "mailto:imited@conversations.im", icon: emailIcon }
-                        ].map((s) => (
-                          <a 
-                            key={s.name}
-                            href={s.link}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center justify-between p-2.5 bg-white/[0.01] border border-white/5 hover:bg-white/[0.03] transition-colors cursor-pointer group"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className="text-white opacity-30 scale-75 group-hover:opacity-100 transition-opacity">
-                                {s.icon}
-                              </div>
-                              <span className="text-[8px] font-bold text-[#666666] group-hover:text-white transition-colors">{s.name}</span>
-                            </div>
-                            <span className="text-[7px] font-mono text-[#888888] group-hover:text-[#888888]">{s.val}</span>
-                          </a>
-                        ))}
-                      </div>
-                    </section>
-
-                    <section>
-                      <div className="tui-label">WALLET ADDRESSES</div>
-                      <div className="grid grid-cols-1 gap-2">
-                        {[
-                          { name: "ETH", addr: "0xF631fd9773740056cd116AA1364E894B448C5CF0", color: "#627EEA", icon: ethIcon },
-                          { name: "BTC", addr: "bc1pnu4rw22fqz5v3y6tvmx9ject7pwfayc0mr28ecdn6w3sx6xdrjmsh5tw5k", color: "#F7931A", icon: btcIcon },
-                          { name: "SOL", addr: "3mG96WjgDNaj1R8XkxifheoBsoPisVTKwDHFo4ErMeRy", color: "#14F195", icon: solIcon }
-                        ].map((c) => (
-                          <div 
-                            key={c.name}
-                            onClick={() => {
-                              navigator.clipboard.writeText(c.addr);
-                              alert(`${c.name} Address Copied`);
-                            }}
-                            className="flex items-center justify-between p-2.5 bg-white/[0.01] border border-white/5 hover:bg-white/[0.03] transition-colors cursor-pointer group"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div style={{ color: c.color }} className="opacity-30 scale-75 group-hover:opacity-100 transition-opacity">
-                                {c.icon}
-                              </div>
-                              <span className="text-[8px] font-bold text-[#666666] group-hover:text-white transition-colors">{c.name}</span>
-                            </div>
-                            <span className="text-[7px] font-mono text-[#888888] group-hover:text-[#888888]">{c.addr.substring(0, 15)}...</span>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  </div>
-
-                  <div className={activeTab === "terminal" ? "block h-full" : "hidden h-full"}>
-                    <InteractiveTerminal onExit={() => setActiveTab("bio")} />
-                  </div>
-                </div>
-              </main>
-
-              {/* Footer */}
-              <footer className="console-footer">
-                <div className="flex items-center gap-4">
-                  <div className="flex gap-3">
-                    <button onClick={() => setSelectedCrypto("eth")} className="void-social-link scale-75" title="Ethereum">{ethIcon}</button>
-                    <button onClick={() => setSelectedCrypto("btc")} className="void-social-link scale-75" title="Bitcoin">{btcIcon}</button>
-                    <button onClick={() => setSelectedCrypto("sol")} className="void-social-link scale-75" title="Solana">{solIcon}</button>
-                  </div>
-                </div>
-
-                <div className="text-[6px] font-bold tracking-[0.2em] text-[#555555] hidden sm:block">
-                  ENCRYPTION: AES 256
-                </div>
-              </footer>
+              </div>
             </div>
-          </Tilt>
-        </div>
+            <ViewCounter />
+          </header>
+
+          {/* Tabs */}
+          <nav className="bio-tabs">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`bio-tab ${activeTab === tab.id ? "active" : ""}`}
+              >
+                <span className="opacity-40 mr-1 font-mono">{tab.num}</span>
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Body */}
+          <div className="bio-body">
+            <AnimatePresence mode="wait">
+              {activeTab === "bio" && (
+                <motion.div
+                  key="bio"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-6"
+                >
+                  <section>
+                    <div className="section-label">System Bio</div>
+                    <p className="text-[0.82rem] leading-relaxed text-[var(--text-muted)]">
+                      <span id="typingText"></span>
+                      <span id="typingTexts" className="hidden">i like my knives blunted &lt;&gt; Owner of @grudge.lol &lt;&gt; Owned some com servers &lt;&gt; Not a comboy &lt;&gt; Kinda popular &lt;&gt; send me eth</span>
+                    </p>
+                  </section>
+
+                  <section>
+                    <MusicPlayer />
+                  </section>
+                </motion.div>
+              )}
+
+              {activeTab === "projects" && (
+                <motion.div
+                  key="projects"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <Projects />
+                </motion.div>
+              )}
+
+              {activeTab === "socials" && (
+                <motion.div
+                  key="socials"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="space-y-6"
+                >
+                  <section>
+                    <div className="section-label">Contact &amp; Socials</div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {SOCIALS.map((s) => (
+                        <a
+                          key={s.name}
+                          href={s.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="bio-row group"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="bio-row-icon scale-90">{s.icon}</div>
+                            <span className="bio-row-name">{s.name}</span>
+                          </div>
+                          <span className="bio-row-value">{s.val}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <div className="section-label">Wallet Addresses</div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {WALLETS.map((c) => (
+                        <div
+                          key={c.name}
+                          onClick={() => {
+                            navigator.clipboard.writeText(c.addr);
+                          }}
+                          className="bio-row group"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div style={{ color: c.color }} className="bio-row-icon scale-90">{c.icon}</div>
+                            <span className="bio-row-name">{c.name}</span>
+                          </div>
+                          <span className="bio-row-value">{c.addr.substring(0, 12)}…</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </motion.div>
+              )}
+
+              {activeTab === "terminal" && (
+                <motion.div
+                  key="terminal"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="h-[340px]"
+                >
+                  <InteractiveTerminal onExit={() => setActiveTab("bio")} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Footer */}
+          <footer className="bio-footer">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSelectedCrypto("eth")} className="bio-pill" title="Ethereum">{ethIcon}</button>
+              <button onClick={() => setSelectedCrypto("btc")} className="bio-pill" title="Bitcoin">{btcIcon}</button>
+              <button onClick={() => setSelectedCrypto("sol")} className="bio-pill" title="Solana">{solIcon}</button>
+            </div>
+            <div className="font-mono text-[0.6rem] tracking-[0.2em] text-[var(--text-faint)] hidden sm:block">
+              EST. MMXXV
+            </div>
+          </footer>
+        </main>
       </div>
-
-
-
-
-
-
-
-
-
     </div>
   );
 }

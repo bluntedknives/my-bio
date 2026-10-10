@@ -21,9 +21,9 @@ export default function ViewCounter() {
   }, []);
 
   return (
-    <div className="tui-view-counter">
+    <div className="bio-view-counter">
       <svg
-        className="w-3.5 h-3.5 mr-2 opacity-60"
+        className="h-3.5 w-3.5 opacity-70"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="none"
@@ -35,9 +35,7 @@ export default function ViewCounter() {
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
         <circle cx="12" cy="12" r="3" />
       </svg>
-      <span className="text-[10px] font-bold tracking-[0.1em]">
-        {formatViews(views)}
-      </span>
+      <span>{formatViews(views)}</span>
     </div>
   );
 }
