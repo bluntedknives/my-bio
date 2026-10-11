@@ -42,8 +42,17 @@ AudioContext owner); do not put it behind a tab/conditional.
 ## Git remotes & pushing
 Push over HTTPS, not SSH. The sandbox's paramiko-based SSH transport is capped at ~60 KB/s and
 stalls on large pushes (the music blobs are ~170 MB); HTTPS finishes in seconds.
-`origin` is `https://github.com/bluntedknives/my-bio.git` and a local credential helper serves
-the PAT from `/workspace/project/.env` (key `github`).
+`origin` is `https://github.com/bluntedknives/my-bio.git`.
+
+### GitHub credentials (durable — set up once)
+- `gh` CLI is authenticated as `bluntedknives` (`~/.config/gh/hosts.yml`); prefer `gh api` / `gh pr`.
+- Global git identity: `bluntedknives <bluntedknives@users.noreply.github.com>`.
+- Global credential helper: `~/.local/bin/git-credential-github.sh` (mode 700). It reads the
+  token from `$GITHUB_TOKEN` first, then falls back to `/workspace/project/.env` (key `github`).
+- Never place the helper in `/tmp`: that directory is wiped between sessions, which silently
+  breaks pushes with `could not read Username for 'https://github.com'`.
+- Most robust: register the PAT as an OpenHands secret named `GITHUB_TOKEN` so it is injected
+  automatically and the `.env` fallback becomes unnecessary.
 
 ## Running the dev server "forever"
 `/workspace/serve-my-bio.sh` is a restart-on-exit wrapper that runs `npm run dev -- --port 12000`
